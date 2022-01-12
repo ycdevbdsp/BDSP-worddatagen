@@ -6,9 +6,13 @@
  
  
  result:
+ 
  {
+ 
     "wordDataArray": [
+    
         {
+        
             "patternID": 7,
             "eventID": 1,
             "tagIndex": -1,
