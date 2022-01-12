@@ -52,7 +52,7 @@ def main():
                 }
                 
                 if eventID == 1:
-                    eventID = 3
+                    eventID = 4
                     
                 output['wordDataArray'].append(wordData)
 
