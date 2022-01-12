@@ -52,7 +52,9 @@ def main():
                 }
                 
                 if eventID == 1:
-                    eventID = 4
+                    eventID = 3
+                elif eventID == 3:
+                    eventID = 1
                     
                 output['wordDataArray'].append(wordData)
 
@@ -62,7 +64,6 @@ def main():
                 newMessage.append("")
 
             if word == '\n':
-                eventID = 1
                 index += 1
                 continue
 
