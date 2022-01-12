@@ -1,3 +1,4 @@
+import re
 import json
 import stringLengthCalculator as calculator
 import copy
@@ -17,7 +18,9 @@ def main():
             message = message.replace("#", "", 1)
             eventID = 7
         
-        messageArray = message.split(" ") #message split by spaces
+        message = message.replace('\\n', '\n')
+        messageArray = re.split('( |\n)', message)
+        #messageArray = message.split(" ") #message split by spaces
         subTotal = [] #length of line, not to drastically excede 800, to be inserted into text
         subTotal.append(0.0)
         subTotalCounter = 0 #used for accessing each line as the loop goes on
@@ -30,8 +33,13 @@ def main():
         print(words)
         for word in messageArray:
             print(word)
-            wordLength = calculator.calculate(word)
-            if subTotal[subTotalCounter] + wordLength > 600 or index == words:
+            if word == ' ':
+                index += 1
+                continue
+            elif word != '\n':
+                wordLength = calculator.calculate(word)
+
+            if subTotal[subTotalCounter] + wordLength > 600 or index == words or word == '\n':
                 newMessage[0] = newMessage[0].replace("'", "’")
 
                 wordData = {
@@ -45,8 +53,6 @@ def main():
                 
                 if eventID == 1:
                     eventID = 3
-                elif eventID == 3:
-                    eventID = 1
                     
                 output['wordDataArray'].append(wordData)
 
@@ -54,6 +60,11 @@ def main():
                 subTotal.append(0.0)
                 newMessage.clear()
                 newMessage.append("")
+
+            if word == '\n':
+                eventID = 1
+                index += 1
+                continue
 
             newMessage[newMessageCounter] += word + " "
             subTotal[subTotalCounter] += wordLength
