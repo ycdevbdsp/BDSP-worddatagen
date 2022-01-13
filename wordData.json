@@ -1,0 +1,122 @@
+{
+    "labelIndex": "CHANGE_BEFORE_IMPORT",
+    "arrayIndex": "CHANGE_BEFORE_IMPORT",
+    "labelName": "Test",
+    "styleInfo": {
+        "styleIndex": 0,
+        "colorIndex": -1,
+        "fontSize": 54,
+        "maxWidth": 1080,
+        "controlID": 0
+    },
+    "attributeValueArray": [
+        -1,
+        0,
+        0,
+        -1,
+        0
+    ],
+    "tagDataArray": [],
+    "wordDataArray": [
+        {
+            "patternID": 7,
+            "eventID": 7,
+            "tagIndex": -1,
+            "tagValue": 0.0,
+            "str": "ABCDEFG ",
+            "strWidth": 135.125
+        }
+    ]
+},
+{
+    "labelIndex": "CHANGE_BEFORE_IMPORT",
+    "arrayIndex": "CHANGE_BEFORE_IMPORT",
+    "labelName": "Test2",
+    "styleInfo": {
+        "styleIndex": 0,
+        "colorIndex": -1,
+        "fontSize": 54,
+        "maxWidth": 1080,
+        "controlID": 0
+    },
+    "attributeValueArray": [
+        -1,
+        0,
+        0,
+        -1,
+        0
+    ],
+    "tagDataArray": [],
+    "wordDataArray": [
+        {
+            "patternID": 7,
+            "eventID": 7,
+            "tagIndex": -1,
+            "tagValue": 0.0,
+            "str": "GFEDCBA ",
+            "strWidth": 135.125
+        }
+    ]
+},
+{
+    "labelIndex": "CHANGE_BEFORE_IMPORT",
+    "arrayIndex": "CHANGE_BEFORE_IMPORT",
+    "labelName": "Test3",
+    "styleInfo": {
+        "styleIndex": 0,
+        "colorIndex": -1,
+        "fontSize": 54,
+        "maxWidth": 1080,
+        "controlID": 0
+    },
+    "attributeValueArray": [
+        -1,
+        0,
+        0,
+        -1,
+        0
+    ],
+    "tagDataArray": [],
+    "wordDataArray": [
+        {
+            "patternID": 7,
+            "eventID": 1,
+            "tagIndex": -1,
+            "tagValue": 0.0,
+            "str": "i hd n a i o w n io a g h o i a p w ndso  p   ami hd n a i o w n io a g ",
+            "strWidth": 585.0
+        },
+        {
+            "patternID": 7,
+            "eventID": 4,
+            "tagIndex": -1,
+            "tagValue": 0.0,
+            "str": "h o i a p w ndso  p   ami hd n a i o w n io a g h o i a p w ndso  p   ",
+            "strWidth": 568.734375
+        },
+        {
+            "patternID": 7,
+            "eventID": 4,
+            "tagIndex": -1,
+            "tagValue": 0.0,
+            "str": "ami hd n a i o w n io a g h o i a p w ndso  p   ami hd n a i o w n io ",
+            "strWidth": 591.53125
+        },
+        {
+            "patternID": 7,
+            "eventID": 4,
+            "tagIndex": -1,
+            "tagValue": 0.0,
+            "str": "a g h o i a p w ndso  p   ami hd n a i o w n io a g h o i a p w ndso  ",
+            "strWidth": 582.96875
+        },
+        {
+            "patternID": 7,
+            "eventID": 7,
+            "tagIndex": -1,
+            "tagValue": 0.0,
+            "str": "p   am ",
+            "strWidth": 55.265625
+        }
+    ]
+}

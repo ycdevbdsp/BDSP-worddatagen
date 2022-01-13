@@ -1,6 +1,10 @@
 charDict = {}
 
 def loadKey():
+    
+    if len(list(charDict.keys())) > 0: ##Don't ask comparing it to an empty dic didn't work
+        return
+    
     keyFileName = 'strlength.txt'
     
     with open(keyFileName, encoding="utf8") as file:
@@ -32,6 +36,7 @@ def calculate(inputString):
         try:
             total += charDict[char]
         except:
+            print(charDict)
             total += charDict["space"]
     return total
 
