@@ -29,10 +29,6 @@ def convert2BDSP(message, printOutput = True, label = None):
 
     output = {"wordDataArray": []}
 
-    if message[0] == '#':
-        message = message.replace("#", "", 1)
-        eventID = 7
-    
     message = message.replace('\\n', '\n')
     messageArray = re.split('( |\n)', message)
     #messageArray = message.split(" ") #message split by spaces
@@ -42,76 +38,74 @@ def convert2BDSP(message, printOutput = True, label = None):
     newMessage = [] #each individual new line, to be inserted into txt
     newMessage.append("")
     newMessageCounter = 0 #counter used for accessing current line
-    
-    words = len(messageArray)
-    index = 0
-    
-    if printOutput:
-        print("Counted", words, "Words in your message")
-        
-    for word in messageArray:
 
+    numWords = len(messageArray)
+    wordCount = 1
+    for word in messageArray:
         if printOutput:
             print(word)
-            
-        if word == ' ':
-            index += 1
-            continue
-        elif word != '\n':
+
+        if word != '\n':
             wordLength = calculator.calculate(word)
 
-        if subTotal[subTotalCounter] + wordLength > 600 or index == words or word == '\n':
-            newMessage[0] = newMessage[0].replace("'", "’")
+            if subTotal[subTotalCounter] + wordLength > 600:
+                newMessage[newMessageCounter] = newMessage[newMessageCounter].replace("'", "’")
+                newMessageCounter += 1
+                newMessage.append("")
+                subTotalCounter += 1
+                subTotal.append(0.0)
 
-            wordData = {
-                "patternID": 7,
-                "eventID": eventID,
-                "tagIndex": -1,
-                "tagValue": 0.0,
-                "str": newMessage[0],
-                "strWidth": subTotal[0]
-            }
-            
-            if eventID == 1:
-                eventID = 4
-                
-            output['wordDataArray'].append(wordData)
+            newMessage[newMessageCounter] += word
 
-            subTotal.clear()
-            subTotal.append(0.0)
-            newMessage.clear()
+            subTotal[subTotalCounter] += wordLength
+        else:
+            newMessage[newMessageCounter] = newMessage[newMessageCounter].replace("'", "’")
+            newMessageCounter += 1
             newMessage.append("")
+            subTotalCounter += 1
+            subTotal.append(0.0)
 
-        if word == '\n':
+        wordCount += 1
+
+    subTotal.clear()
+    newMessageIterator = copy.deepcopy(newMessage)
+    newMessage.clear()
+
+    index = 1
+    patternID = 7
+    eventID = 1
+    count = len(newMessageIterator)
+
+    for line in newMessageIterator:
+        line.strip()
+
+        if index == count:
+            patternID = 0
+            eventID = 7
+
+        wordData = {
+            "patternID": patternID,
+            "eventID": eventID,
+            "tagIndex": -1,
+            "tagValue": 0.0,
+            "str": line.encode("utf8"),
+            "strWidth": calculator.calculate(line)
+        }
+
+        if eventID == 1:
+            eventID = 3
+        elif eventID == 3:
             eventID = 1
-            index += 1
-            continue
 
-        newMessage[newMessageCounter] += word + " "
-        subTotal[subTotalCounter] += wordLength
+        output['wordDataArray'].append(wordData)
         index += 1
 
-    if index == words:
-        if len(newMessage[0]) > 0:
-            newMessage[0] = newMessage[0].replace("'", "’")
-            wordData = {
-                "patternID": 7,
-                "eventID": 7,
-                "tagIndex": -1,
-                "tagValue": 0.0,
-                "str": newMessage[0],
-                "strWidth": subTotal[0]
-            }
-            output['wordDataArray'].append(wordData)
+    if label == None:
+        return rapidjson.dumps(output, indent=4)
+        ##rapidjson is basically a drag and drop json class thats 2x faster
 
-        output['wordDataArray'][len(output['wordDataArray']) - 1]['eventID'] = 7
-        
-        if label == None:
-            return rapidjson.dumps(output, indent=4)
-            ##rapidjson is basically a drag and drop json class thats 2x faster
-            
-        else:
-            return addHeader(output, label)
+    else:
+        return addHeader(output, label)
 
 if (__name__ == "__main__"):
     main()
