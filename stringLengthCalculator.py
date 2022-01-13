@@ -36,7 +36,6 @@ def calculate(inputString):
         try:
             total += charDict[char]
         except:
-            print(charDict)
             total += charDict["space"]
     return total
 

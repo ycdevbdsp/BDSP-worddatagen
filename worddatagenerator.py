@@ -88,7 +88,7 @@ def convert2BDSP(message, printOutput = True, label = None):
             "eventID": eventID,
             "tagIndex": -1,
             "tagValue": 0.0,
-            "str": line.encode("utf8"),
+            "str": line,
             "strWidth": calculator.calculate(line)
         }
 
@@ -101,10 +101,11 @@ def convert2BDSP(message, printOutput = True, label = None):
         index += 1
 
     if label == None:
-        return rapidjson.dumps(output, indent=4)
+        return rapidjson.dumps(output, indent=4, ensure_ascii=False) ##Ensure_ascii=False allows utf8 exclusive characters to be written
         ##rapidjson is basically a drag and drop json class thats 2x faster
 
     else:
+        print(output)
         return addHeader(output, label)
 
 if (__name__ == "__main__"):
