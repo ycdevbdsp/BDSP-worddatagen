@@ -3,6 +3,7 @@ import json
 import tkinter as tk
 import os
 import rapidjson
+import uuid
 import worddatagenerator as worddata
 from tkinter import filedialog
 from PyQt5.QtWidgets import QDialog, QApplication
@@ -10,11 +11,14 @@ from PyQt5.QtGui import QFont
 from demoListWidget import *
 class MyForm(QDialog):
     
+    OpenFile = {}
     MessageList = {}
     FontSize = 54
     FontSizeAmp = 0.63
     path = "input"
     outputs = "output"
+    NextLabelIndex = 0
+    NextArrayIndex = 0
     
     def __init__(self):
         super().__init__()
@@ -61,50 +65,46 @@ class MyForm(QDialog):
     
     def addMsg(self):
         msgFile = self.ui.listFileNames.currentItem().text()
+        msgLabel = "18-msg_" + self.ui.msgLabel.text()
         
         if os.path.exists(self.outputs) == False:
             os.makedirs(self.outputs)
+              
+        newMsg = worddata.convert2BDSP(self.ui.textEditNewMsg.toPlainText(), self.NextLabelIndex, self.NextArrayIndex, False, msgLabel)
         
-        with open(self.path+"\\"+msgFile, encoding="utf-8") as msgs:
-            Messages = json.load(msgs)
-            nextLabelIndex = 0
-            nextArrayIndex = 0
-            realIndex = 0
-            for Msg in Messages['labelDataArray']:
-                labelIndex = Msg['labelIndex']
-                arrayIndex = Msg['arrayIndex']
-                
-                if labelIndex >= nextLabelIndex:
-                    nextLabelIndex = labelIndex + 1
-                if arrayIndex >= nextArrayIndex:
-                    nextArrayIndex = arrayIndex + 1
-                    
-            newMsg = worddata.convert2BDSP(self.ui.textEditNewMsg.toPlainText(), False, "REPLACE THIS")
-            print (newMsg)
-            Messages['labelDataArray'].append(newMsg)
-            
-            with open(self.outputs+"\\new_" + msgFile, 'w+', encoding="utf-8") as outfile:
-                json.dump(Messages, outfile)
+        self.NextLabelIndex += 1
+        self.NextArrayIndex += 1
+        
+        print (newMsg)
+        self.OpenFile['labelDataArray'].append(newMsg)
+        
+        with open(self.outputs+"\\new_" + msgFile, 'w+', encoding="utf-8") as outfile:
+            json.dump(self.OpenFile, outfile)
             
         
         
     def popMessages(self):
+        #make sure an item is selected
         msgFile = self.ui.listFileNames.currentItem().text()
         list = self.ui.listMsgNames
         list.clear()
         self.MessageList = {}
-        
+        self.NextLabelIndex = 0
+        self.NextArrayIndex = 0
         with open(self.path+"\\"+msgFile, encoding="utf-8") as msgs:
-            Messages = json.load(msgs)
-            FileName = Messages['m_Name']
-            print(FileName)
-            RealIndex = 0
+            self.OpenFile = json.load(msgs)
+            FileName = self.OpenFile['m_Name']
             
-            for Msg in Messages['labelDataArray']:
+            for Msg in self.OpenFile['labelDataArray']:
                 labelIndex = Msg['labelIndex']
                 arrayIndex = Msg['arrayIndex']
                 labelName = Msg['labelName']
                 
+                if labelIndex >= self.NextLabelIndex:
+                    self.NextLabelIndex = labelIndex + 1
+                if arrayIndex >= self.NextArrayIndex:
+                    self.NextArrayIndex = arrayIndex + 1
+                    
                 if labelName == "":
                     continue;
                     
@@ -119,7 +119,7 @@ class MyForm(QDialog):
                 list.addItem(labelName)
         
     def dispNewMsgContents(self):
-        self.ui.msgContents.setFont(QFont('Arial', round(self.FontSize*self.FontSizeAmp)))
+        self.ui.msgContents.setFont(QFont('Arial', 35))
         self.ui.msgContents.setText(self.ui.textEditNewMsg.toPlainText())
         
     def dispMsgContents(self):
@@ -132,7 +132,7 @@ class MyForm(QDialog):
         for words in self.MessageList[labelName]['wordDataArray']:
             msg += words['str'] + '\n'
             
-        self.ui.msgContents.setFont(QFont('Arial', round(self.MessageList[labelName]['styleInfo']['fontSize']*0.63)))
+        self.ui.msgContents.setFont(QFont('Arial', 35))
         self.ui.msgContents.setText(msg)
 if __name__=="__main__":
     app = QApplication(sys.argv)

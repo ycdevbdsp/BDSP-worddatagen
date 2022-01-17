@@ -39,9 +39,9 @@ class Ui_Dialog(object):
         self.horizontalLayout.addWidget(self.msgContents)
         self.scrollArea.setWidget(self.scrollAreaWidgetContents_2)
         self.textEditNewMsg = QtWidgets.QTextEdit(Dialog)
-        self.textEditNewMsg.setGeometry(QtCore.QRect(330, 30, 321, 101))
+        self.textEditNewMsg.setGeometry(QtCore.QRect(330, 30, 501, 101))
         font = QtGui.QFont()
-        font.setPointSize(34)
+        font.setPointSize(16)
         self.textEditNewMsg.setFont(font)
         self.textEditNewMsg.setObjectName("textEditNewMsg")
         self.label = QtWidgets.QLabel(Dialog)
@@ -57,16 +57,28 @@ class Ui_Dialog(object):
         self.label_3.setGeometry(QtCore.QRect(330, 10, 71, 16))
         self.label_3.setObjectName("label_3")
         self.btnAddMsg = QtWidgets.QPushButton(Dialog)
-        self.btnAddMsg.setGeometry(QtCore.QRect(330, 150, 75, 23))
+        self.btnAddMsg.setGeometry(QtCore.QRect(330, 190, 75, 23))
         self.btnAddMsg.setObjectName("btnAddMsg")
+        self.msgLabel = QtWidgets.QLineEdit(Dialog)
+        self.msgLabel.setGeometry(QtCore.QRect(330, 160, 161, 20))
+        self.msgLabel.setObjectName("msgLabel")
+        self.label_4 = QtWidgets.QLabel(Dialog)
+        self.label_4.setGeometry(QtCore.QRect(330, 140, 71, 16))
+        self.label_4.setObjectName("label_4")
 
         self.retranslateUi(Dialog)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
 
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
-        Dialog.setWindowTitle(_translate("Dialog", "Dialog"))
+        Dialog.setWindowTitle(_translate("Dialog", "Message Manager"))
+        self.textEditNewMsg.setHtml(_translate("Dialog", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:16pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p></body></html>"))
         self.label.setText(_translate("Dialog", "Messages"))
         self.label_2.setText(_translate("Dialog", "Files"))
         self.label_3.setText(_translate("Dialog", "New Message"))
         self.btnAddMsg.setText(_translate("Dialog", "Add Msg"))
+        self.label_4.setText(_translate("Dialog", "Message Label"))
