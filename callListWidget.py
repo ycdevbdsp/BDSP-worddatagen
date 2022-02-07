@@ -38,6 +38,7 @@ class MyForm(QDialog):
         for f in fileList:
             files.addItem(f)
         
+        files.setCurrentItem(files.item(0))
         # with open(file, encoding="utf-8") as msgs:
             # Messages = json.load(msgs)
             # FileName = Messages['m_Name']

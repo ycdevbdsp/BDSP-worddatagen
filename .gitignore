@@ -141,3 +141,8 @@ test
 # import Files
 wordData.json
 english.csv
+.idea/BDSP-worddatagen.iml
+.idea/misc.xml
+.idea/modules.xml
+.idea/vcs.xml
+.idea/workspace.xml

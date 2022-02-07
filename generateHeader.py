@@ -60,11 +60,11 @@ from textwrap import indent
 import rapidjson
 
 
-def addHeader(message, label):
+def addHeader(message, labelIndex, arrayIndex, label):
     
     header = {
-      "labelIndex": "CHANGE_BEFORE_IMPORT",
-      "arrayIndex": "CHANGE_BEFORE_IMPORT",
+      "labelIndex": labelIndex,
+      "arrayIndex": arrayIndex,
       "labelName": "CHANGE_BEFORE_IMPORT",
       "styleInfo": {
         "styleIndex": 0,
@@ -87,4 +87,4 @@ def addHeader(message, label):
     header["labelName"] = label
     header["wordDataArray"] = message["wordDataArray"]
     
-    return rapidjson.dumps(header, indent=4)
+    return header

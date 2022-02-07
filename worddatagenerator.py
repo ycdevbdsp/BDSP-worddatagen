@@ -17,7 +17,7 @@ def main():
         file.write(convert2BDSP(message))
         print("Message Saved to wordData.json")
         
-def convert2BDSP(message, printOutput = True, label = None):
+def convert2BDSP(message, labelIndex, arrayIndex, printOutput = True, label = None):
     
     calculator.loadKey()
 
@@ -48,7 +48,7 @@ def convert2BDSP(message, printOutput = True, label = None):
         if word != '\n':
             wordLength = calculator.calculate(word)
 
-            if subTotal[subTotalCounter] + wordLength > 600:
+            if subTotal[subTotalCounter] + wordLength > 660:
                 newMessage[newMessageCounter] = newMessage[newMessageCounter].replace("'", "’")
                 newMessageCounter += 1
                 newMessage.append("")
@@ -88,7 +88,7 @@ def convert2BDSP(message, printOutput = True, label = None):
             "eventID": eventID,
             "tagIndex": -1,
             "tagValue": 0.0,
-            "str": line.encode("utf8"),
+            "str": line,
             "strWidth": calculator.calculate(line)
         }
 
@@ -101,11 +101,11 @@ def convert2BDSP(message, printOutput = True, label = None):
         index += 1
 
     if label == None:
-        return rapidjson.dumps(output, indent=4)
+        return output
         ##rapidjson is basically a drag and drop json class thats 2x faster
 
     else:
-        return addHeader(output, label)
+        return addHeader(output, labelIndex, arrayIndex, label)
 
 if (__name__ == "__main__"):
     main()
