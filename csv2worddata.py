@@ -2,6 +2,7 @@ from lib2to3.pytree import convert
 from tokenize import Triple
 from worddatagenerator import convert2BDSP
 import stringLengthCalculator as calculator
+import rapidjson
 
 ##hardcoding this for now
 
@@ -15,7 +16,7 @@ def splitcsv(filename):
         
         for line in f.read().splitlines():
             
-            line = line.split(",")
+            line = line.split("|")
             
             label = line[0].strip() ##strip removes trailing or leading whitespace
             message = line[1].strip()
@@ -25,12 +26,20 @@ def splitcsv(filename):
     return wordDic, list(wordDic.keys())
 
 
+def splitjson(filename):
+    
+    with open(filename, "rt", encoding="utf8") as f:
+        wordDic = rapidjson.load(filename)
+        
+    return wordDic, list(wordDic.keys())
+
+
 def main():
     
     dic, dicKeys = splitcsv(src)
     
     outfile = 'wordData.json'
-    file = open(outfile, "w+", encoding="utf8")
+    file = open(outfile, "wt", encoding="utf8")
     
     First = True
     

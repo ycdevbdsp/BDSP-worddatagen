@@ -87,4 +87,4 @@ def addHeader(message, label):
     header["labelName"] = label
     header["wordDataArray"] = message["wordDataArray"]
     
-    return rapidjson.dumps(header, indent=4)
+    return rapidjson.dumps(header, indent=4, ensure_ascii=False)
