@@ -1,12 +1,8 @@
 import sys
 import json
-import tkinter as tk
 import os
-import rapidjson
-import uuid
 import worddatagenerator as worddata
-from tkinter import filedialog
-from PyQt5.QtWidgets import QDialog, QApplication
+from PyQt5.QtWidgets import QDialog, QApplication, QMessageBox
 from PyQt5.QtGui import QFont
 from demoListWidget import *
 class MyForm(QDialog):
@@ -42,44 +38,31 @@ class MyForm(QDialog):
             files.addItem(f)
         
         files.setCurrentItem(files.item(0))
-        # with open(file, encoding="utf-8") as msgs:
-            # Messages = json.load(msgs)
-            # FileName = Messages['m_Name']
-            # print(FileName)
-            # RealIndex = 0
-            
-            # for Msg in Messages['labelDataArray']:
-                # labelIndex = Msg['labelIndex']
-                # arrayIndex = Msg['arrayIndex']
-                # labelName = Msg['labelName']
-                
-                # if labelName == "":
-                    # continue
-                # self.MessageList[labelName] = Msg
-                
-                # style = Msg['styleInfo']
-                # attribute = Msg['attributeValueArray']
-                # dialog = [{}]
-                # for WordData in Msg['wordDataArray']:
-                    # dialog.append(WordData)
-                # print(labelName)
-                # list.addItem(labelName)
-                
         self.show()
     
     def replaceMsg(self):
-        newMsg = worddata.convert2BDSP(self.ui.textEditNewMsg.toPlainText(), 0, 0, False, "")
-        print("Selected Message Index: " + str(self.SelectedMessageIndex))
-        self.OpenFile['labelDataArray'][self.SelectedMessageIndex]['wordDataArray'] = newMsg['wordDataArray']
-        print(self.OpenFile['labelDataArray'][self.SelectedMessageIndex])
+        if self.SelectedMessageIndex == 0:
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Critical)
+            msg.setText("Select a message to replace.")
+            msg.exec_()
+            return
+
+        try:
+            newMsg = worddata.convert2BDSP(self.ui.textEditNewMsg.toPlainText(), 0, 0, False, "")
+            print("Selected Message Index: " + str(self.SelectedMessageIndex))
+            self.OpenFile['labelDataArray'][self.SelectedMessageIndex]['wordDataArray'] = newMsg['wordDataArray']
+            print(self.OpenFile['labelDataArray'][self.SelectedMessageIndex])
+        except Exception as e:
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Critical)
+            msg.setText(str(e))
+            msg.exec_()
         return
     
     def addMsg(self):
         msgLabel = "1-msg_" + self.ui.msgLabel.text()
         
-        if os.path.exists(self.outputs) == False:
-            os.makedirs(self.outputs)
-              
         newMsg = worddata.convert2BDSP(self.ui.textEditNewMsg.toPlainText(), self.NextLabelIndex, self.NextArrayIndex, False, msgLabel)
         
         self.NextLabelIndex += 1
@@ -90,10 +73,20 @@ class MyForm(QDialog):
         return
         
     def saveChanges(self):
-        msgFile = self.ui.listFileNames.currentItem().text()
+        try:
+            msgFile = self.ui.listFileNames.currentItem().text()
 
-        with open(self.outputs+"\\new_" + msgFile, 'w+', encoding="utf-8") as outfile:
-            json.dump(self.OpenFile, outfile)
+            if os.path.exists(self.outputs) == False:
+                os.makedirs(self.outputs)
+
+            with open(self.outputs+"\\new_" + msgFile, 'w+', encoding="utf-8") as outfile:
+                json.dump(self.OpenFile, outfile)
+        except Exception as e:
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Critical)
+            msg.setText("An error occurred trying to save your changes:\n" + str(e) + "\nMake sure the 'output' folder exists in the same " +
+               "directory as this executable, and then try again.")
+            msg.exec_()
     
     
     def popMessages(self):
