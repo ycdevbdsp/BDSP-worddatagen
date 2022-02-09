@@ -19,6 +19,7 @@ class MyForm(QDialog):
     outputs = "output"
     NextLabelIndex = 0
     NextArrayIndex = 0
+    SelectedMessageIndex = 0
     
     def __init__(self):
         super().__init__()
@@ -28,6 +29,8 @@ class MyForm(QDialog):
         self.ui.listFileNames.currentItemChanged.connect(self.popMessages)
         self.ui.listMsgNames.currentItemChanged.connect(self.dispMsgContents)
         self.ui.btnAddMsg.clicked.connect(self.addMsg)
+        self.ui.btnReplaceMsg.clicked.connect(self.replaceMsg)
+        self.ui.btnSave.clicked.connect(self.saveChanges)
         
         list = self.ui.listMsgNames
         files = self.ui.listFileNames
@@ -64,9 +67,15 @@ class MyForm(QDialog):
                 
         self.show()
     
+    def replaceMsg(self):
+        newMsg = worddata.convert2BDSP(self.ui.textEditNewMsg.toPlainText(), 0, 0, False, "")
+        print("Selected Message Index: " + str(self.SelectedMessageIndex))
+        self.OpenFile['labelDataArray'][self.SelectedMessageIndex]['wordDataArray'] = newMsg['wordDataArray']
+        print(self.OpenFile['labelDataArray'][self.SelectedMessageIndex])
+        return
+    
     def addMsg(self):
-        msgFile = self.ui.listFileNames.currentItem().text()
-        msgLabel = "18-msg_" + self.ui.msgLabel.text()
+        msgLabel = "1-msg_" + self.ui.msgLabel.text()
         
         if os.path.exists(self.outputs) == False:
             os.makedirs(self.outputs)
@@ -78,12 +87,15 @@ class MyForm(QDialog):
         
         print (newMsg)
         self.OpenFile['labelDataArray'].append(newMsg)
+        return
         
+    def saveChanges(self):
+        msgFile = self.ui.listFileNames.currentItem().text()
+
         with open(self.outputs+"\\new_" + msgFile, 'w+', encoding="utf-8") as outfile:
             json.dump(self.OpenFile, outfile)
-            
-        
-        
+    
+    
     def popMessages(self):
         #make sure an item is selected
         msgFile = self.ui.listFileNames.currentItem().text()
@@ -107,7 +119,7 @@ class MyForm(QDialog):
                     self.NextArrayIndex = arrayIndex + 1
                     
                 if labelName == "":
-                    continue;
+                    continue
                     
                 self.MessageList[labelName] = Msg
                 
@@ -120,21 +132,24 @@ class MyForm(QDialog):
                 list.addItem(labelName)
         
     def dispNewMsgContents(self):
-        self.ui.msgContents.setFont(QFont('Arial', 35))
+        self.ui.msgContents.setFont(QFont('Arial', 16))
         self.ui.msgContents.setText(self.ui.textEditNewMsg.toPlainText())
         
     def dispMsgContents(self):
         if None is self.ui.listMsgNames.currentItem():
             return
-            
+        self.SelectedMessageIndex = self.ui.listMsgNames.currentIndex().row()
+        print(self.SelectedMessageIndex)
+        print("dispMsgContents")
         labelName = self.ui.listMsgNames.currentItem().text()
         msg = ""
         
         for words in self.MessageList[labelName]['wordDataArray']:
             msg += words['str'] + '\n'
             
-        self.ui.msgContents.setFont(QFont('Arial', 35))
+        self.ui.msgContents.setFont(QFont('Arial', 16))
         self.ui.msgContents.setText(msg)
+
 if __name__=="__main__":
     app = QApplication(sys.argv)
     w = MyForm()
