@@ -3,6 +3,7 @@ import rapidjson
 from generateHeader import addHeader
 import stringLengthCalculator as calculator
 import copy
+from PyQt5.QtWidgets import QMessageBox
 
 def main():
     
@@ -45,7 +46,7 @@ def convert2BDSP(message, labelIndex, arrayIndex, printOutput = True, label = No
         if printOutput:
             print(word)
 
-        if word != '\n':
+        if word != '\n' and "<name>" not in word:
             wordLength = calculator.calculate(word)
 
             if subTotal[subTotalCounter] + wordLength > 660:
@@ -64,6 +65,31 @@ def convert2BDSP(message, labelIndex, arrayIndex, printOutput = True, label = No
             newMessage.append("")
             subTotalCounter += 1
             subTotal.append(0.0)
+
+            if "<name>" in word:
+                #separate what's on either side of "<name>"
+                insertString = re.split('(<name>)', word)
+
+                #insertString will have at most 3 entries, and seems to always have an empty string "" at index 0
+                #if <name> isn't preceded by anything in the entered message. It's trickier than I care to deal with
+                #if the user does something like hello<name>!, so I'm just going to reject the message and force that
+                #space before <name>.
+
+                if insertString[0] != "":
+                    msg = QMessageBox()
+                    msg.setIcon(QMessageBox.Critical)
+                    msg.setText("Nothing can precede <name> unless it's at the start of a message.")
+                    msg.exec_()
+                    raise Exception ("Nothing can precede <name> unless it is the beginning of a message.")
+
+                print(insertString)
+                newMessage[newMessageCounter] += insertString[1]
+                newMessageCounter += 1
+                newMessage.append("")
+                if insertString[2] != "":
+                    newMessage[newMessageCounter] += insertString[2]
+                    newMessageCounter += 1
+                    newMessage.append("")
 
         wordCount += 1
 
@@ -91,6 +117,13 @@ def convert2BDSP(message, labelIndex, arrayIndex, printOutput = True, label = No
             "str": line,
             "strWidth": calculator.calculate(line)
         }
+
+        if line == "<name>":
+            wordData["patternID"] = 5
+            wordData["eventID"] = 0
+            wordData["tagIndex"] = 0
+            wordData["str"] = ""
+            wordData["strWidth"] = -1.0
 
         if eventID == 1:
             eventID = 3

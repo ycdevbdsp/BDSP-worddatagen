@@ -1,6 +1,7 @@
 import sys
 import json
 import os
+import uuid
 import worddatagenerator as worddata
 from PyQt5.QtWidgets import QDialog, QApplication, QMessageBox
 from PyQt5.QtGui import QFont
@@ -15,7 +16,7 @@ class MyForm(QDialog):
     outputs = "output"
     NextLabelIndex = 0
     NextArrayIndex = 0
-    SelectedMessageIndex = 0
+    SelectedMessageIndex = -1
     
     def __init__(self):
         super().__init__()
@@ -23,7 +24,8 @@ class MyForm(QDialog):
         self.ui.setupUi(self)
         self.ui.textEditNewMsg.textChanged.connect(self.dispNewMsgContents)
         self.ui.listFileNames.currentItemChanged.connect(self.popMessages)
-        self.ui.listMsgNames.currentItemChanged.connect(self.dispMsgContents)
+        #self.ui.listMsgNames.currentItemChanged.connect(self.dispMsgContents)
+        self.ui.listMsgNames.itemSelectionChanged.connect(self.dispMsgContents)
         self.ui.btnAddMsg.clicked.connect(self.addMsg)
         self.ui.btnReplaceMsg.clicked.connect(self.replaceMsg)
         self.ui.btnSave.clicked.connect(self.saveChanges)
@@ -41,7 +43,8 @@ class MyForm(QDialog):
         self.show()
     
     def replaceMsg(self):
-        if self.SelectedMessageIndex == 0:
+        print(self.SelectedMessageIndex)
+        if self.SelectedMessageIndex == -1:
             msg = QMessageBox()
             msg.setIcon(QMessageBox.Critical)
             msg.setText("Select a message to replace.")
@@ -53,6 +56,7 @@ class MyForm(QDialog):
             print("Selected Message Index: " + str(self.SelectedMessageIndex))
             self.OpenFile['labelDataArray'][self.SelectedMessageIndex]['wordDataArray'] = newMsg['wordDataArray']
             print(self.OpenFile['labelDataArray'][self.SelectedMessageIndex])
+            self.dispNewMsgContents()
         except Exception as e:
             msg = QMessageBox()
             msg.setIcon(QMessageBox.Critical)
@@ -129,7 +133,8 @@ class MyForm(QDialog):
         self.ui.msgContents.setText(self.ui.textEditNewMsg.toPlainText())
         
     def dispMsgContents(self):
-        if None is self.ui.listMsgNames.currentItem():
+        print(len(self.ui.listMsgNames.selectedItems()))
+        if len(self.ui.listMsgNames.selectedItems()) == 0:
             return
         self.SelectedMessageIndex = self.ui.listMsgNames.currentIndex().row()
         print(self.SelectedMessageIndex)
@@ -138,7 +143,10 @@ class MyForm(QDialog):
         msg = ""
         
         for words in self.MessageList[labelName]['wordDataArray']:
-            msg += words['str'] + '\n'
+            if words['patternID'] == 5:
+                msg += "<name>" + '\n'
+            else:
+                msg += words['str'] + '\n'
             
         self.ui.msgContents.setFont(QFont('Arial', 16))
         self.ui.msgContents.setText(msg)
