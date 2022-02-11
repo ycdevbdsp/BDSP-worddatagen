@@ -104,7 +104,8 @@ class MyForm(QDialog):
         with open(self.path+"\\"+msgFile, encoding="utf-8") as msgs:
             self.OpenFile = json.load(msgs)
             FileName = self.OpenFile['m_Name']
-            
+            trueIndex = 0
+
             for Msg in self.OpenFile['labelDataArray']:
                 labelIndex = Msg['labelIndex']
                 arrayIndex = Msg['arrayIndex']
@@ -116,16 +117,18 @@ class MyForm(QDialog):
                     self.NextArrayIndex = arrayIndex + 1
                     
                 if labelName == "":
-                    continue
+                    labelName = str(trueIndex) + "-unused"
                     
-                self.MessageList[labelName] = Msg
+                self.MessageList[trueIndex] = Msg
                 
+                trueIndex += 1
+
                 style = Msg['styleInfo']
                 attribute = Msg['attributeValueArray']
                 dialog = [{}]
                 for WordData in Msg['wordDataArray']:
                     dialog.append(WordData)
-                print(labelName)
+                #sprint(labelName)
                 list.addItem(labelName)
         
     def dispNewMsgContents(self):
@@ -139,10 +142,9 @@ class MyForm(QDialog):
         self.SelectedMessageIndex = self.ui.listMsgNames.currentIndex().row()
         print(self.SelectedMessageIndex)
         print("dispMsgContents")
-        labelName = self.ui.listMsgNames.currentItem().text()
         msg = ""
         
-        for words in self.MessageList[labelName]['wordDataArray']:
+        for words in self.MessageList[self.SelectedMessageIndex]['wordDataArray']:
             if words['patternID'] == 5:
                 msg += "<name>" + '\n'
             else:
