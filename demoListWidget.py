@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'demoListWidget.ui'
+# Form implementation generated from reading ui file 'demolistwidget.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.6
 #
@@ -10,11 +10,17 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
+useKakugo = False
 
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
-        Dialog.resize(551, 557)
+        Dialog.resize(543, 555)
+        font = QtGui.QFont()
+        
+        font.setFamilies(['UDKakugoC80Pro-DB', 'Liberation Sans'])
+        
+        Dialog.setFont(font)
         self.listMsgNames = QtWidgets.QListWidget(Dialog)
         self.listMsgNames.setGeometry(QtCore.QRect(280, 30, 256, 151))
         self.listMsgNames.setObjectName("listMsgNames")
@@ -22,7 +28,9 @@ class Ui_Dialog(object):
         self.textEditNewMsg.setGeometry(QtCore.QRect(10, 230, 501, 101))
         font = QtGui.QFont()
         font.setPointSize(16)
+        font.setKerning(False)
         self.textEditNewMsg.setFont(font)
+        self.textEditNewMsg.setPlaceholderText("")
         self.textEditNewMsg.setObjectName("textEditNewMsg")
         self.label = QtWidgets.QLabel(Dialog)
         self.label.setGeometry(QtCore.QRect(280, 10, 47, 13))
@@ -54,25 +62,18 @@ class Ui_Dialog(object):
         self.label_6 = QtWidgets.QLabel(Dialog)
         self.label_6.setGeometry(QtCore.QRect(10, 410, 91, 16))
         self.label_6.setObjectName("label_6")
-        self.scrollArea = QtWidgets.QScrollArea(Dialog)
-        self.scrollArea.setGeometry(QtCore.QRect(10, 430, 501, 111))
-        self.scrollArea.setWidgetResizable(True)
-        self.scrollArea.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignTop)
-        self.scrollArea.setObjectName("scrollArea")
-        self.scrollAreaWidgetContents = QtWidgets.QWidget()
-        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 499, 109))
-        self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
-        self.horizontalLayout = QtWidgets.QHBoxLayout(self.scrollAreaWidgetContents)
-        self.horizontalLayout.setObjectName("horizontalLayout")
-        self.msgContents = QtWidgets.QLabel(self.scrollAreaWidgetContents)
-        self.msgContents.setText("")
-        self.msgContents.setWordWrap(True)
-        self.msgContents.setObjectName("msgContents")
-        self.horizontalLayout.addWidget(self.msgContents)
-        self.scrollArea.setWidget(self.scrollAreaWidgetContents)
         self.btnSave = QtWidgets.QPushButton(Dialog)
         self.btnSave.setGeometry(QtCore.QRect(420, 360, 75, 23))
         self.btnSave.setObjectName("btnSave")
+        self.msgContents = QtWidgets.QTextEdit(Dialog)
+        self.msgContents.setGeometry(QtCore.QRect(10, 430, 501, 101))
+        font = QtGui.QFont()
+        font.setPointSize(16)
+        font.setKerning(True)
+        self.msgContents.setFont(font)
+        self.msgContents.setReadOnly(True)
+        self.msgContents.setPlaceholderText("")
+        self.msgContents.setObjectName("msgContents")
 
         self.retranslateUi(Dialog)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
@@ -80,11 +81,19 @@ class Ui_Dialog(object):
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
         Dialog.setWindowTitle(_translate("Dialog", "Message Manager"))
-        self.textEditNewMsg.setHtml(_translate("Dialog", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+
+        if useKakugo is True:
+            self.textEditNewMsg.setHtml(_translate("Dialog", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
-"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:16pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p></body></html>"))
+"</style></head><body style=\" font-family:\'FOT-UDKakugoC80 Pro DB\'; font-size:16pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:\'MS Shell Dlg 2\';\"><br /></p></body></html>"))
+        else:
+            self.textEditNewMsg.setHtml(_translate("Dialog", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'Liberation Sans\'; font-size:16pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:\'MS Shell Dlg 2\';\"><br /></p></body></html>"))
         self.label.setText(_translate("Dialog", "Messages"))
         self.label_2.setText(_translate("Dialog", "Files"))
         self.label_3.setText(_translate("Dialog", "New Message"))
@@ -94,3 +103,16 @@ class Ui_Dialog(object):
         self.label_5.setText(_translate("Dialog", "1-"))
         self.label_6.setText(_translate("Dialog", "Message Contents"))
         self.btnSave.setText(_translate("Dialog", "Save"))
+
+        if useKakugo is True:
+            self.msgContents.setHtml(_translate("Dialog", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'FOT-UDKakugoC80 Pro DB\'; font-size:16pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:\'MS Shell Dlg 2\';\"><br /></p></body></html>"))
+        else:
+            self.msgContents.setHtml(_translate("Dialog", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'Liberation Sans\'; font-size:16pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:\'MS Shell Dlg 2\';\"><br /></p></body></html>"))

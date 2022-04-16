@@ -32,6 +32,7 @@ def convert2BDSP(message, labelIndex, arrayIndex, printOutput = True, label = No
     output = {"wordDataArray": []}
 
     message = message.replace('\\n', '\n')
+    message = message.rstrip()
     messageArray = re.split('( |\n)', message)
     #messageArray = message.split(" ") #message split by spaces
     subTotal = [] #length of line, not to drastically excede 800, to be inserted into text
@@ -105,6 +106,7 @@ def convert2BDSP(message, labelIndex, arrayIndex, printOutput = True, label = No
 
             if '\\r' in word:
                 event = re.split('\\\\r', word)
+                print(event)
                 eventIDList[newMessageCounter] = 3
             
             if '\\w' in word:
@@ -125,6 +127,7 @@ def convert2BDSP(message, labelIndex, arrayIndex, printOutput = True, label = No
                     newMessage[newMessageCounter] = newMessage[newMessageCounter].replace("'", "’")
                     newMessageCounter += 1
                     newMessage.append("")
+                    eventIDList.append(4) #\f formatter needed here.
                     subTotalCounter += 1
                     subTotal.append(0.0)
 
@@ -137,13 +140,13 @@ def convert2BDSP(message, labelIndex, arrayIndex, printOutput = True, label = No
                 newMessage[newMessageCounter] = newMessage[newMessageCounter].replace("'", "’")
                 newMessageCounter += 1
                 newMessage.append("")
+                eventIDList.append(0)
                 subTotalCounter += 1
                 subTotal.append(0.0)
 
                 newMessage[newMessageCounter] += event[1]
                 subTotal[subTotalCounter] += wordLength
 
-            eventIDList.append(0)
             # newMessage[newMessageCounter] = newMessage[newMessageCounter].replace("'", "’")
             # newMessageCounter += 1
 
@@ -181,7 +184,6 @@ def convert2BDSP(message, labelIndex, arrayIndex, printOutput = True, label = No
 
         wordCount += 1
 
-    subTotal.clear()
     newMessageIterator = copy.deepcopy(newMessage)
     newMessage.clear()
 
@@ -217,7 +219,7 @@ def convert2BDSP(message, labelIndex, arrayIndex, printOutput = True, label = No
         # and capped with an eventID 7. I've found that effectively an eventID of 4 should not precede an eventID of 7.
         # If this happens, replace eventID 4 with 1.
 
-        if precedingFinal == True and eventID == 4:
+        if precedingFinal is True and eventID == 4:
             eventID = 1
 
         wordData = {

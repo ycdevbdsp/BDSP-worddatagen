@@ -17,7 +17,7 @@ class MyForm(QDialog):
     NextLabelIndex = 0
     NextArrayIndex = 0
     SelectedMessageIndex = -1
-    
+    useKakugo = False
     def __init__(self):
         super().__init__()
         self.ui = Ui_Dialog()
@@ -29,7 +29,10 @@ class MyForm(QDialog):
         self.ui.btnAddMsg.clicked.connect(self.addMsg)
         self.ui.btnReplaceMsg.clicked.connect(self.replaceMsg)
         self.ui.btnSave.clicked.connect(self.saveChanges)
-        
+        self.ui.textEditNewMsg.setFont(QFont('FOT-UDKakugoC80 Pro DB', 16))
+
+        # if self.ui.textEditNewMsg.font().family() == 'FOT-UDKakugoC80 Pro DB':
+        #     self.ui.textEditNewMsg.setFontPointSize(17)
         list = self.ui.listMsgNames
         files = self.ui.listFileNames
         
@@ -132,8 +135,18 @@ class MyForm(QDialog):
                 list.addItem(labelName)
         
     def dispNewMsgContents(self):
-        self.ui.msgContents.setFont(QFont('Arial', 16))
-        self.ui.msgContents.setText(self.ui.textEditNewMsg.toPlainText())
+        self.ui.msgContents.setFont(QFont('FOT-UDKakugoC80 Pro DB', 16))
+
+        # if self.ui.msgContents.font().family() == 'FOT-UDKakugoC80 Pro DB':
+        #     self.ui.msgContents.setFontPointSize(17)
+        newMsg = worddata.convert2BDSP(self.ui.textEditNewMsg.toPlainText(), 0, 0, False, "")
+        msg = ""
+        for words in newMsg['wordDataArray']:
+            if words['patternID'] == 5:
+                msg += "<name>" + '\n'
+            else:
+                msg += words['str'] + '\n'
+        self.ui.msgContents.setText(msg)
         
     def dispMsgContents(self):
         print(len(self.ui.listMsgNames.selectedItems()))
@@ -150,7 +163,9 @@ class MyForm(QDialog):
             else:
                 msg += words['str'] + '\n'
             
-        self.ui.msgContents.setFont(QFont('Arial', 16))
+        self.ui.msgContents.setFont(QFont('FOT-UDKakugoC80 Pro DB', 16))
+        # if self.ui.msgContents.font().family() == 'FOT-UDKakugoC80 Pro DB':
+        #     self.ui.msgContents.setFontPointSize(17)
         self.ui.msgContents.setText(msg)
 
 if __name__=="__main__":
