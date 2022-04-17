@@ -52,12 +52,18 @@ def convert2BDSP(message, labelIndex, arrayIndex, printOutput = True, label = No
 
         words = []
 
-        if word != '\n' and '\\r' not in word and '\\f' not in word and '\\w' not in word and "<name>" not in word:
+        if word != '\n' and '\n' not in word and '\\r' not in word and '\\f' not in word and '\\w' not in word and "<name>" not in word:
             wordLength = calculator.calculate(word)
 
             if subTotal[subTotalCounter] + wordLength > 660:
                 newMessage[newMessageCounter] = newMessage[newMessageCounter].replace("'", "’")
-                eventIDList[newMessageCounter] = 4
+                
+                #eventID 4 cannot follow 3, so if the previous eventID was 3, force this one to be 1 instead.
+
+                if newMessageCounter > 0 and eventIDList[newMessageCounter-1] == 3:
+                    eventIDList[newMessageCounter] = 1
+                else:
+                    eventIDList[newMessageCounter] = 4
                 newMessageCounter += 1
                 eventIDList.append(0)
                 newMessage.append("")
@@ -102,7 +108,11 @@ def convert2BDSP(message, labelIndex, arrayIndex, printOutput = True, label = No
         else:
             event = []
             if word == '\n':
-                eventIDList[newMessageCounter] = 1
+                eventIDList[newMessageCounter] = 3
+
+            elif '\n' in word:
+                event = re.split('\n', word)
+                eventIDList[newMessageCounter] = 3
 
             if '\\r' in word:
                 event = re.split('\\\\r', word)
@@ -115,7 +125,12 @@ def convert2BDSP(message, labelIndex, arrayIndex, printOutput = True, label = No
 
             if '\\f' in word:
                 event = re.split('\\\\f', word)
-                eventIDList[newMessageCounter] = 4
+                #eventID 4 cannot follow 3, so if the previous eventID was 3, force this one to be 1 instead.
+
+                if newMessageCounter > 0 and eventIDList[newMessageCounter-1] == 3:
+                    eventIDList[newMessageCounter] = 1
+                else:
+                    eventIDList[newMessageCounter] = 4
 
             if len(event) > 0:
                 #the first side of the split gets added to the current newMessageCounter just as if it were read off
@@ -152,6 +167,8 @@ def convert2BDSP(message, labelIndex, arrayIndex, printOutput = True, label = No
 
             if len(event) == 0:
                 newMessage.append("")
+                newMessageCounter += 1
+                eventIDList.append(0)
 
             subTotalCounter += 1
             subTotal.append(0.0)
