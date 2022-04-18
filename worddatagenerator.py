@@ -230,7 +230,7 @@ def convert2BDSP(message, labelIndex, arrayIndex, printOutput = True, label = No
             eventID = 7
 
         if eventID == 2:
-            tagValue = 1.9999999999
+            tagValue = 0.19999999999
 
         # There's something weird with how worddatas proceed when it comes to eventIDs 3 and 4 being mixed together
         # and capped with an eventID 7. I've found that effectively an eventID of 4 should not precede an eventID of 7.
