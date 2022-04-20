@@ -142,7 +142,16 @@ def convert2BDSP(message, labelIndex, arrayIndex, printOutput = True, label = No
                     newMessage[newMessageCounter] = newMessage[newMessageCounter].replace("'", "’")
                     newMessageCounter += 1
                     newMessage.append("")
-                    eventIDList.append(4) #\f formatter needed here.
+
+                    #did this happen on a \r boundary? Need to make sure the 3 we just assigned is actually a 4,
+                    #and move the 3 to the next eventID.
+
+                    if '\\r' in word:
+                        eventIDList[newMessageCounter-1] = 4
+                        eventIDList.append(3)
+                    #else just append 4 as usual.
+                    else:
+                        eventIDList.append(4) #\f formatter needed here.
                     subTotalCounter += 1
                     subTotal.append(0.0)
 
@@ -231,6 +240,12 @@ def convert2BDSP(message, labelIndex, arrayIndex, printOutput = True, label = No
 
         if eventID == 2:
             tagValue = 0.19999999999
+
+        if eventID == 1 and eventIDListIndex < len(eventIDList) and eventIDList[eventIDListIndex+1] == 1:
+            eventID = 3
+
+        if eventID == 4 and eventIDListIndex > 0 and eventIDList[eventIDListIndex-1] == 3:
+            eventID = 1
 
         # There's something weird with how worddatas proceed when it comes to eventIDs 3 and 4 being mixed together
         # and capped with an eventID 7. I've found that effectively an eventID of 4 should not precede an eventID of 7.
