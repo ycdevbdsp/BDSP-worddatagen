@@ -224,7 +224,6 @@ def convert2BDSP(message, labelIndex, arrayIndex, printOutput = True, label = No
     #It's easier to do it this way than to provide logic above to only use 1 in the first index.
 
     eventIDList[0] = 1
-    precedingFinal = False
     for line in newMessageIterator:
         line.strip()
 
@@ -241,17 +240,13 @@ def convert2BDSP(message, labelIndex, arrayIndex, printOutput = True, label = No
         if eventID == 2:
             tagValue = 0.19999999999
 
+        # eventID 1 should not follow each other, so treat the preceding eventID 1 as the "end" of the previous
+        # textbox and force it to be eventID 3.
+
         if eventID == 1 and eventIDListIndex < len(eventIDList) and eventIDList[eventIDListIndex+1] == 1:
             eventID = 3
 
         if eventID == 4 and eventIDListIndex > 0 and eventIDList[eventIDListIndex-1] == 3:
-            eventID = 1
-
-        # There's something weird with how worddatas proceed when it comes to eventIDs 3 and 4 being mixed together
-        # and capped with an eventID 7. I've found that effectively an eventID of 4 should not precede an eventID of 7.
-        # If this happens, replace eventID 4 with 1.
-
-        if precedingFinal is True and eventID == 4:
             eventID = 1
 
         wordData = {
