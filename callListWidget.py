@@ -1,8 +1,10 @@
 import sys
+import re
 import json
 import os
 import uuid
 import worddatagenerator as worddata
+import stringLengthCalculator as calculator
 from PyQt5.QtWidgets import QDialog, QApplication, QMessageBox
 from PyQt5.QtGui import QFont
 from demoListWidget import *
@@ -28,6 +30,7 @@ class MyForm(QDialog):
         self.ui.listMsgNames.itemSelectionChanged.connect(self.dispMsgContents)
         self.ui.btnAddMsg.clicked.connect(self.addMsg)
         self.ui.btnReplaceMsg.clicked.connect(self.replaceMsg)
+        self.ui.btnSanitize.clicked.connect(self.sanitize)
         self.ui.btnSave.clicked.connect(self.saveChanges)
         self.ui.textEditNewMsg.setFont(QFont('FOT-UDKakugoC80 Pro DB', 16))
 
@@ -45,6 +48,99 @@ class MyForm(QDialog):
         files.setCurrentItem(files.item(0))
         self.show()
     
+    def sanitize(self):
+        index = 0
+        calculator.loadKey()
+        for m in self.MessageList:
+            wd = self.OpenFile['labelDataArray'][index]['wordDataArray']
+            td = self.OpenFile['labelDataArray'][index]['tagDataArray']
+            newText = ""
+            skip = False
+
+            #worddata empty? skip it
+
+            if len(wd) == 0:
+                index += 1
+                continue
+
+            #tagdata of len > 0 means we have variables. just skip this one and move on to the next.
+            if len(td) > 0:
+                index += 1
+                continue
+            
+            #preliminarily search for any pattern IDs that aren't 0 or 7. If there is one, then don't
+            #try to sanitize it.
+
+            for preW in wd:
+                if preW['patternID'] not in [0, 7]:
+                    skip = True
+                    break
+            
+            if skip == True:
+                index += 1
+                continue
+
+            # get each string of text in this worddata
+            wdIndex = 0
+            for w in wd: 
+                str = w['str']
+                eventID = w['eventID']
+                newText += str.strip()
+
+                # don't append any formatters to single entry worddatas or to the final entry,
+                # unless the first entry has eventID 3.
+                
+                if eventID != 3 and (len(wd) == 1 or wdIndex == len(wd) - 1):
+                    continue
+
+                #if the strwidth of str plus the width of the first word of the next str is greater than 660,
+                #and the eventID of this wd is 1 or 4, then we do not need to append an explicit \f. Otherwise
+                #we do. If the eventID in this case is 3, then we still need to preserve that with the \r formatter.
+
+                if wdIndex + 1 < len(wd):
+                    strWidth = w['strWidth']
+                    nextWord = re.split('( |\n)', wd[wdIndex+1]['str'].strip())[0]
+                    nextWordWidth = calculator.calculate(nextWord)
+
+                    if strWidth + nextWordWidth > 660:
+                        if eventID == 3:
+                            newText += '\\r'
+
+                        elif newText.endswith(' ') == False:
+                            newText += ' '
+                        wdIndex += 1
+                        continue                       
+                
+                if eventID == 3:
+                    newText += '\\r'
+
+                else:
+                    newText += '\\f'
+
+                wdIndex += 1
+
+            # before we sanitize, fix cases like 'strong...\f...\ranyway' where more than one formatter
+            # is in a "word"
+
+            message = newText.rstrip()
+            messageArray = re.split('( |\n)', message)
+            finalText = ""
+            for m in messageArray:
+                if m.count('\\r') + m.count('\\f') > 1:
+                    m = m.replace('\\r', '\\r ')
+                    m = m.replace('\\f', '\\f ')
+
+                finalText += m
+
+            # Run the newText through the tool, then replace the existing worddata
+            # with the resulting worddad
+
+            newMsg = worddata.convert2BDSP(finalText, 0, 0, False, "")
+            self.OpenFile['labelDataArray'][index]['wordDataArray'] = newMsg['wordDataArray']
+            index += 1
+
+        print('Sanitized! Please Save immediately.')
+
     def replaceMsg(self):
         print(self.SelectedMessageIndex)
         if self.SelectedMessageIndex == -1:
@@ -149,7 +245,6 @@ class MyForm(QDialog):
         self.ui.msgContents.setText(msg)
         
     def dispMsgContents(self):
-        print(len(self.ui.listMsgNames.selectedItems()))
         if len(self.ui.listMsgNames.selectedItems()) == 0:
             return
         self.SelectedMessageIndex = self.ui.listMsgNames.currentIndex().row()

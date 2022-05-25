@@ -52,20 +52,21 @@ def convert2BDSP(message, labelIndex, arrayIndex, printOutput = True, label = No
 
         words = []
 
-        if word != '\n' and '\n' not in word and '\\r' not in word and '\\f' not in word and '\\w' not in word and "<name>" not in word:
+        if word != '\n' and '\\n' not in word and '\\r' not in word and '\\f' not in word and '\\w' not in word and "<name>" not in word:
             wordLength = calculator.calculate(word)
 
             if subTotal[subTotalCounter] + wordLength > 660:
                 newMessage[newMessageCounter] = newMessage[newMessageCounter].replace("'", "’")
-                
-                #eventID 4 cannot follow 3, so if the previous eventID was 3, force this one to be 1 instead.
 
-                if newMessageCounter > 0 and eventIDList[newMessageCounter-1] == 3:
-                    eventIDList[newMessageCounter] = 1
+                #we unfortunately have to do some funky logic to make sure we don't screw up the eventID procession.
+
+                if eventIDList[newMessageCounter] == 3:
+                    eventIDList.append(3)
+
                 else:
-                    eventIDList[newMessageCounter] = 4
+                    eventIDList.append(4)
+
                 newMessageCounter += 1
-                eventIDList.append(0)
                 newMessage.append("")
                 subTotalCounter += 1
                 subTotal.append(0.0)
@@ -107,51 +108,52 @@ def convert2BDSP(message, labelIndex, arrayIndex, printOutput = True, label = No
             subTotal[subTotalCounter] += wordLength
         else:
             event = []
-            if word == '\n':
-                eventIDList[newMessageCounter] = 3
-
-            elif '\n' in word:
-                event = re.split('\n', word)
-                eventIDList[newMessageCounter] = 3
+            if '\n' in word:
+                eventIDList[newMessageCounter] = 1
 
             if '\\r' in word:
                 event = re.split('\\\\r', word)
                 print(event)
-                eventIDList[newMessageCounter] = 3
+                eventIDList.append(3)
             
             if '\\w' in word:
                 event = re.split('\\\\w', word)
-                eventIDList[newMessageCounter] = 2
+                eventIDList.append(2)
 
             if '\\f' in word:
                 event = re.split('\\\\f', word)
-                #eventID 4 cannot follow 3, so if the previous eventID was 3, force this one to be 1 instead.
 
-                if newMessageCounter > 0 and eventIDList[newMessageCounter-1] == 3:
-                    eventIDList[newMessageCounter] = 1
+                #eventID 4 can't follow eventID 3, but I don't understand why yet. 4/17/2022.
+                #As a result, force this to be another 3.
+
+                if eventIDList[newMessageCounter] == 3:
+                    eventIDList.append(1)
+
                 else:
-                    eventIDList[newMessageCounter] = 4
+                    eventIDList.append(4)
 
             if len(event) > 0:
                 #the first side of the split gets added to the current newMessageCounter just as if it were read off
                 #the line. If it wraps to a new line, that's fine.
 
                 wordLength = calculator.calculate(event[0])
-                
+
                 if subTotal[subTotalCounter] + wordLength > 660:
                     newMessage[newMessageCounter] = newMessage[newMessageCounter].replace("'", "’")
+
+                    #the eventIDList at newMessageCounter+1 index is about to be overwritten, so take whatever's there now
+                    #and append it to the end before we overwrite it.
+
+                    eventIDList.append(eventIDList[newMessageCounter+1])
+
+                    if eventIDList[newMessageCounter] == 3:
+                        eventIDList[newMessageCounter+1] = 3
+
+                    else:
+                        eventIDList[newMessageCounter+1] = 4
+                        
                     newMessageCounter += 1
                     newMessage.append("")
-
-                    #did this happen on a \r boundary? Need to make sure the 3 we just assigned is actually a 4,
-                    #and move the 3 to the next eventID.
-
-                    if '\\r' in word:
-                        eventIDList[newMessageCounter-1] = 4
-                        eventIDList.append(3)
-                    #else just append 4 as usual.
-                    else:
-                        eventIDList.append(4) #\f formatter needed here.
                     subTotalCounter += 1
                     subTotal.append(0.0)
 
@@ -164,12 +166,10 @@ def convert2BDSP(message, labelIndex, arrayIndex, printOutput = True, label = No
                 newMessage[newMessageCounter] = newMessage[newMessageCounter].replace("'", "’")
                 newMessageCounter += 1
                 newMessage.append("")
-                eventIDList.append(0)
                 subTotalCounter += 1
                 subTotal.append(0.0)
 
                 newMessage[newMessageCounter] += event[1]
-                wordLength = calculator.calculate(event[1])
                 subTotal[subTotalCounter] += wordLength
 
             # newMessage[newMessageCounter] = newMessage[newMessageCounter].replace("'", "’")
@@ -178,9 +178,9 @@ def convert2BDSP(message, labelIndex, arrayIndex, printOutput = True, label = No
             if len(event) == 0:
                 newMessage.append("")
                 newMessageCounter += 1
-                eventIDList.append(0)
-                subTotalCounter += 1
-                subTotal.append(0.0)
+
+            subTotalCounter += 1
+            subTotal.append(0.0)
 
             if "<name>" in word:
                 #separate what's on either side of "<name>"
@@ -199,15 +199,13 @@ def convert2BDSP(message, labelIndex, arrayIndex, printOutput = True, label = No
                     raise Exception ("Nothing can precede <name> unless it is the beginning of a message.")
 
                 print(insertString)
-                eventIDList[newMessageCounter] = 0
+                eventIDList[newMessageCounter] = 5
                 newMessage[newMessageCounter] += insertString[1]
                 newMessageCounter += 1
-                eventIDList.append(4)
                 newMessage.append("")
                 if insertString[2] != "":
                     newMessage[newMessageCounter] += insertString[2]
                     newMessageCounter += 1
-                    eventIDList.append()
                     newMessage.append("")
 
         wordCount += 1
@@ -226,8 +224,9 @@ def convert2BDSP(message, labelIndex, arrayIndex, printOutput = True, label = No
     #It's easier to do it this way than to provide logic above to only use 1 in the first index.
 
     eventIDList[0] = 1
+    precedingFinal = False
     for line in newMessageIterator:
-        line = line.strip()
+        line.strip()
 
         eventID = eventIDList[eventIDListIndex]
         tagValue = 0.0
@@ -240,15 +239,13 @@ def convert2BDSP(message, labelIndex, arrayIndex, printOutput = True, label = No
             eventID = 7
 
         if eventID == 2:
-            tagValue = 0.19999999999
+            tagValue = 1.9999999999
 
-        # eventID 1 should not follow each other, so treat the preceding eventID 1 as the "end" of the previous
-        # textbox and force it to be eventID 3.
+        # There's something weird with how worddatas proceed when it comes to eventIDs 3 and 4 being mixed together
+        # and capped with an eventID 7. I've found that effectively an eventID of 4 should not precede an eventID of 7.
+        # If this happens, replace eventID 4 with 1.
 
-        if eventID == 1 and eventIDListIndex < len(eventIDList) and eventIDList[eventIDListIndex+1] == 1:
-            eventID = 3
-
-        if eventID == 4 and eventIDListIndex > 0 and eventIDList[eventIDListIndex-1] == 3:
+        if precedingFinal is True and eventID == 4:
             eventID = 1
 
         wordData = {

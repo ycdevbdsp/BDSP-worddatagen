@@ -146,3 +146,12 @@ english.csv
 .idea/modules.xml
 .idea/vcs.xml
 .idea/workspace.xml
+input/english_dp_scenario3.json
+input/english_dp_scenario2.json
+input/english_dp_scenario1.json
+input/zeratest.json
+input/zeraclearclpy.json
+input/zera.json
+input/input.json
+input
+output*
