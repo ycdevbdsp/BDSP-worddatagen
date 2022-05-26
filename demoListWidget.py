@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'demolistwidget.ui'
+# Form implementation generated from reading ui file 'demoListWidget.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.6
 #
@@ -74,6 +74,12 @@ class Ui_Dialog(object):
         self.btnSanitize = QtWidgets.QPushButton(Dialog)
         self.btnSanitize.setGeometry(QtCore.QRect(340, 390, 75, 23))
         self.btnSanitize.setObjectName("btnSanitize")
+        self.speakerCombo = QtWidgets.QComboBox(Dialog)
+        self.speakerCombo.setGeometry(QtCore.QRect(380, 190, 131, 22))
+        self.speakerCombo.setObjectName("speakerCombo")
+        self.label_7 = QtWidgets.QLabel(Dialog)
+        self.label_7.setGeometry(QtCore.QRect(320, 190, 47, 13))
+        self.label_7.setObjectName("label_7")
 
         self.retranslateUi(Dialog)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
@@ -101,3 +107,4 @@ class Ui_Dialog(object):
 "</style></head><body style=\" font-family:\'Liberation Sans\'; font-size:16pt; font-weight:400; font-style:normal;\">\n"
 "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:\'MS Shell Dlg 2\';\"><br /></p></body></html>"))
         self.btnSanitize.setText(_translate("Dialog", "Sanitize"))
+        self.label_7.setText(_translate("Dialog", "Speaker:"))

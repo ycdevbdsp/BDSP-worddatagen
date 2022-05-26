@@ -12,9 +12,14 @@ class MyForm(QDialog):
     
     OpenFile = {}
     MessageList = {}
+    MessageListIndices = {}
+    Speakers = {}
+    Names = {}
     FontSize = 54
     FontSizeAmp = 0.63
     path = "input"
+    nameplatesPath = "input\MsgWindowData.json"
+    speakerNamesPath = "input\english_dlp_speakers_name.json"
     outputs = "output"
     NextLabelIndex = 0
     NextArrayIndex = 0
@@ -33,6 +38,7 @@ class MyForm(QDialog):
         self.ui.btnSanitize.clicked.connect(self.sanitize)
         self.ui.btnSave.clicked.connect(self.saveChanges)
         self.ui.textEditNewMsg.setFont(QFont('FOT-UDKakugoC80 Pro DB', 16))
+        self.ui.speakerCombo.currentTextChanged.connect(self.filterMsgsBySpeaker)
 
         # if self.ui.textEditNewMsg.font().family() == 'FOT-UDKakugoC80 Pro DB':
         #     self.ui.textEditNewMsg.setFontPointSize(17)
@@ -43,11 +49,53 @@ class MyForm(QDialog):
         fileList = os.listdir(self.path)
         
         for f in fileList:
-            files.addItem(f)
+            if f != "MsgWindowData.json" and f != "english_dlp_speakers_name.json":
+                files.addItem(f)
         
+        if os.path.exists(self.nameplatesPath):
+
+            npFile = open(self.nameplatesPath, 'r', encoding="utf-8")
+            speakerNameFile = open(self.speakerNamesPath, 'r', encoding="utf-8")
+            np = json.load(npFile)
+            spk = json.load(speakerNameFile)
+            
+            self.Speakers = {}  #english_dlp_speakers_name.json
+            for s in spk["labelDataArray"]:
+                if s["wordDataArray"][0]["str"] != "":
+                    self.Speakers[s["labelName"]] = s["wordDataArray"][0]["str"]
+                    print(self.Speakers[s["labelName"]])
+
+            self.Names = {}     #MsgWindowData.json
+            for n in np["SpeakerNameData"]:
+                if "SPEAKERS_NAME" not in n["talk_label"]:
+                    self.Names[n["label"]] = n["talk_label"]
+                    #This is a name that is referenced by variables, like the rival's name so add it to the Speakers list if it doesn't already exist.
+                    if n["talk_label"] not in self.Speakers:
+                        self.Speakers[n["talk_label"]] = n["talk_label"]
+                else:
+                    self.Names[n["label"]] = self.Speakers[n["talk_label"]]
+
+            #Fill the combobox with the different speakers, but first add the "all" option.
+            self.ui.speakerCombo.addItem("All")
+            for s in self.Speakers:
+                self.ui.speakerCombo.addItem(self.Speakers[s])
+            
         files.setCurrentItem(files.item(0))
         self.show()
     
+    def filterMsgsBySpeaker(self):
+        speaker = self.ui.speakerCombo.currentText()
+
+        i = 0
+        while i < self.ui.listMsgNames.count():
+            msg = self.ui.listMsgNames.item(i).text()
+
+            if speaker != "All" and (msg not in self.Names or self.Names[msg] != speaker):
+                self.ui.listMsgNames.item(i).setHidden(True)
+            else:
+                self.ui.listMsgNames.item(i).setHidden(False)
+            i += 1
+
     def sanitize(self):
         index = 0
         calculator.loadKey()
@@ -142,6 +190,7 @@ class MyForm(QDialog):
         print('Sanitized! Please Save immediately.')
 
     def replaceMsg(self):
+        label = self.ui.listMsgNames.currentItem().text()
         print(self.SelectedMessageIndex)
         if self.SelectedMessageIndex == -1:
             msg = QMessageBox()
@@ -153,8 +202,8 @@ class MyForm(QDialog):
         try:
             newMsg = worddata.convert2BDSP(self.ui.textEditNewMsg.toPlainText(), 0, 0, False, "")
             print("Selected Message Index: " + str(self.SelectedMessageIndex))
-            self.OpenFile['labelDataArray'][self.SelectedMessageIndex]['wordDataArray'] = newMsg['wordDataArray']
-            print(self.OpenFile['labelDataArray'][self.SelectedMessageIndex])
+            self.OpenFile['labelDataArray'][self.MessageListIndices[label]]['wordDataArray'] = newMsg['wordDataArray']
+            print(self.OpenFile['labelDataArray'][self.MessageListIndices[label]])
             self.dispNewMsgContents()
         except Exception as e:
             msg = QMessageBox()
@@ -218,17 +267,16 @@ class MyForm(QDialog):
                 if labelName == "":
                     labelName = str(trueIndex) + "-unused"
                     
-                self.MessageList[trueIndex] = Msg
-                
+                self.MessageList[labelName] = Msg
+                self.MessageListIndices[labelName] = trueIndex
                 trueIndex += 1
 
-                style = Msg['styleInfo']
-                attribute = Msg['attributeValueArray']
                 dialog = [{}]
                 for WordData in Msg['wordDataArray']:
                     dialog.append(WordData)
                 #sprint(labelName)
                 list.addItem(labelName)
+            
         
     def dispNewMsgContents(self):
         self.ui.msgContents.setFont(QFont('FOT-UDKakugoC80 Pro DB', 16))
@@ -248,11 +296,12 @@ class MyForm(QDialog):
         if len(self.ui.listMsgNames.selectedItems()) == 0:
             return
         self.SelectedMessageIndex = self.ui.listMsgNames.currentIndex().row()
+        tLabel = self.ui.listMsgNames.currentItem().text()
         print(self.SelectedMessageIndex)
         print("dispMsgContents")
         msg = ""
         
-        for words in self.MessageList[self.SelectedMessageIndex]['wordDataArray']:
+        for words in self.MessageList[tLabel]['wordDataArray']:
             if words['patternID'] == 5:
                 msg += "<name>" + '\n'
             else:
