@@ -5,11 +5,11 @@ import os
 import uuid
 import worddatagenerator as worddata
 import stringLengthCalculator as calculator
-from PyQt5.QtWidgets import QDialog, QApplication, QMessageBox
+from PyQt5.QtWidgets import QDialog, QApplication, QMessageBox, QTableWidgetItem
 from PyQt5.QtGui import QFont
-from demoListWidget import *
-class MyForm(QDialog):
-    
+from PyQt5.QtCore import QModelIndex
+from dialogEditor import *
+class MyForm(QDialog):    
     OpenFile = {}
     MessageList = {}
     MessageListIndices = {}
@@ -39,6 +39,8 @@ class MyForm(QDialog):
         self.ui.btnSave.clicked.connect(self.saveChanges)
         self.ui.textEditNewMsg.setFont(QFont('FOT-UDKakugoC80 Pro DB', 16))
         self.ui.speakerCombo.currentTextChanged.connect(self.filterMsgsBySpeaker)
+        self.ui.msgTableFilter.textChanged.connect(self.filterMsgTable)
+        self.ui.msgTable.cellClicked.connect(self.selectMsgFromMessageList)
 
         # if self.ui.textEditNewMsg.font().family() == 'FOT-UDKakugoC80 Pro DB':
         #     self.ui.textEditNewMsg.setFontPointSize(17)
@@ -83,6 +85,20 @@ class MyForm(QDialog):
         files.setCurrentItem(files.item(0))
         self.show()
     
+    def filterMsgTable(self):
+        filterText = self.ui.msgTableFilter.text().lower()
+
+        if len(filterText) < 2 and filterText != "":
+            return
+
+        for row in range(self.ui.msgTable.rowCount()):
+            _row = self.ui.msgTable.item(row, 1)
+            if _row is not None and filterText in _row.text().lower():
+                self.ui.msgTable.showRow(row)
+            else:
+                self.ui.msgTable.hideRow(row)
+
+
     def filterMsgsBySpeaker(self):
         speaker = self.ui.speakerCombo.currentText()
 
@@ -242,13 +258,19 @@ class MyForm(QDialog):
     
     
     def popMessages(self):
+        _translate = QtCore.QCoreApplication.translate
+
         #make sure an item is selected
         msgFile = self.ui.listFileNames.currentItem().text()
         list = self.ui.listMsgNames
+        msgTable = self.ui.msgTable
         list.clear()
         self.MessageList = {}
         self.NextLabelIndex = 0
         self.NextArrayIndex = 0
+        self.ui.msgTable.setRowCount(0)
+        self.ui.msgTableFilter.setText("")
+
         with open(self.path+"\\"+msgFile, encoding="utf-8") as msgs:
             self.OpenFile = json.load(msgs)
             FileName = self.OpenFile['m_Name']
@@ -269,13 +291,27 @@ class MyForm(QDialog):
                     
                 self.MessageList[labelName] = Msg
                 self.MessageListIndices[labelName] = trueIndex
-                trueIndex += 1
 
                 dialog = [{}]
+                messageRow = ""
+                delimiter = ''
                 for WordData in Msg['wordDataArray']:
                     dialog.append(WordData)
+                    messageRow += (delimiter + str(WordData['str']))
+
+                    if len(messageRow) > 0 and messageRow[len(messageRow)-1] != ' ':
+                        delimiter = ' '
+                    else:
+                        delimiter = ''
+
                 #sprint(labelName)
+                    self.ui.msgTable.setRowCount(trueIndex+1)
+                    item = QTableWidgetItem(labelName)
+                    self.ui.msgTable.setItem(trueIndex, 0, item)
+                    item = QTableWidgetItem(messageRow)
+                    self.ui.msgTable.setItem(trueIndex, 1, item)
                 list.addItem(labelName)
+                trueIndex += 1
             
         
     def dispNewMsgContents(self):
@@ -292,6 +328,11 @@ class MyForm(QDialog):
                 msg += words['str'] + '\n'
         self.ui.msgContents.setText(msg)
         
+    def selectMsgFromMessageList(self):
+        index = self.ui.msgTable.currentRow()
+        print(f"table index: {index}")
+        self.ui.listMsgNames.setCurrentRow(index)
+
     def dispMsgContents(self):
         if len(self.ui.listMsgNames.selectedItems()) == 0:
             return
