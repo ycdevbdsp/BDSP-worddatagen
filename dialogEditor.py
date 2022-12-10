@@ -14,7 +14,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
-        Dialog.resize(1475, 563)
+        Dialog.resize(1475, 565)
         font = QtGui.QFont()
         font.setFamily("Liberation Sans")
         Dialog.setFont(font)
@@ -106,6 +106,9 @@ class Ui_Dialog(object):
         self.label_8 = QtWidgets.QLabel(Dialog)
         self.label_8.setGeometry(QtCore.QRect(570, 540, 47, 13))
         self.label_8.setObjectName("label_8")
+        self.btnSetAllTextColor = QtWidgets.QPushButton(Dialog)
+        self.btnSetAllTextColor.setGeometry(QtCore.QRect(720, 540, 75, 23))
+        self.btnSetAllTextColor.setObjectName("btnSetAllTextColor")
 
         self.retranslateUi(Dialog)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
@@ -137,3 +140,4 @@ class Ui_Dialog(object):
         item = self.msgTable.horizontalHeaderItem(1)
         item.setText(_translate("Dialog", "Message"))
         self.label_8.setText(_translate("Dialog", "Filter:"))
+        self.btnSetAllTextColor.setText(_translate("Dialog", "Set All Color"))

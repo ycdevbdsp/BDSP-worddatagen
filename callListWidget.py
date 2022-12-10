@@ -5,8 +5,8 @@ import os
 import uuid
 import worddatagenerator as worddata
 import stringLengthCalculator as calculator
-from PyQt5.QtWidgets import QDialog, QApplication, QMessageBox, QTableWidgetItem
-from PyQt5.QtGui import QFont
+from PyQt5.QtWidgets import QDialog, QApplication, QMessageBox, QTableWidgetItem, QColorDialog
+from PyQt5.QtGui import QFont, QColor
 from PyQt5.QtCore import QModelIndex
 from dialogEditor import *
 class MyForm(QDialog):    
@@ -24,7 +24,28 @@ class MyForm(QDialog):
     NextLabelIndex = 0
     NextArrayIndex = 0
     SelectedMessageIndex = -1
+    SelectedTextFile = ""
     useKakugo = False
+
+
+    OpenColorTag = {
+        "patternID": 2,
+        "eventID": 0,
+        "tagIndex": -1,
+        "tagValue": 0.0,
+        "str": "<color=#FFFFFFFF>",
+        "strWidth": -1.0
+    }
+
+    CloseColorTag = {
+        "patternID": 2,
+        "eventID": 0,
+        "tagIndex": -1,
+        "tagValue": 0.0,
+        "str": "</color>",
+        "strWidth": -1.0
+    }
+
     def __init__(self):
         super().__init__()
         self.ui = Ui_Dialog()
@@ -37,6 +58,7 @@ class MyForm(QDialog):
         self.ui.btnReplaceMsg.clicked.connect(self.replaceMsg)
         self.ui.btnSanitize.clicked.connect(self.sanitize)
         self.ui.btnSave.clicked.connect(self.saveChanges)
+        self.ui.btnSetAllTextColor.clicked.connect(self.setAllTextColor)
         self.ui.textEditNewMsg.setFont(QFont('FOT-UDKakugoC80 Pro DB', 16))
         self.ui.speakerCombo.currentTextChanged.connect(self.filterMsgsBySpeaker)
         self.ui.msgTableFilter.textChanged.connect(self.filterMsgTable)
@@ -205,6 +227,50 @@ class MyForm(QDialog):
 
         print('Sanitized! Please Save immediately.')
 
+    def setAllTextColor(self):
+        color = QColorDialog.getColor()
+
+        if color.isValid():
+            print(color.name())
+
+            msg = QMessageBox()
+            ret = msg.question(self, '',
+               f"You are about to overwrite the text color of all spoken dialog in {self.SelectedTextFile}. Do you wish to continue?",
+               msg.Yes | msg.No)
+
+            if (ret == msg.No):
+                return
+
+            self.OpenColorTag['str'] = f"<color={color.name()}>"
+            for w in self.OpenFile['labelDataArray']:
+                if w['styleInfo']['colorIndex'] == 10:
+                    continue
+                
+                newWordData = []
+                preserveCount = 0
+                for wd in w['wordDataArray']:                    
+                    
+                    if preserveCount > 0:
+                        newWordData.append(wd)
+                        preserveCount -= 1
+                        continue
+
+                    if "<color=" in wd['str']:
+                        #this is a preexisting color tag that we should preserve completely.
+                        #We assume that color tags only contain one entry between open and close.
+
+                        newWordData.append(wd)
+                        preserveCount = 2
+                        continue
+
+                    newWordData.append(self.OpenColorTag)
+                    newWordData.append(wd)
+                    newWordData.append(self.CloseColorTag)
+
+                w['wordDataArray'] = newWordData
+            return
+        return
+
     def replaceMsg(self):
         label = self.ui.listMsgNames.currentItem().text()
         print(self.SelectedMessageIndex)
@@ -262,6 +328,7 @@ class MyForm(QDialog):
 
         #make sure an item is selected
         msgFile = self.ui.listFileNames.currentItem().text()
+        self.SelectedTextFile = msgFile
         list = self.ui.listMsgNames
         msgTable = self.ui.msgTable
         list.clear()

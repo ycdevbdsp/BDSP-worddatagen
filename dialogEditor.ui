@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1475</width>
-    <height>563</height>
+    <height>565</height>
    </rect>
   </property>
   <property name="font">
@@ -327,6 +327,19 @@ p, li { white-space: pre-wrap; }
    </property>
    <property name="text">
     <string>Filter:</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="btnSetAllTextColor">
+   <property name="geometry">
+    <rect>
+     <x>720</x>
+     <y>540</y>
+     <width>75</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Set All Color</string>
    </property>
   </widget>
  </widget>
