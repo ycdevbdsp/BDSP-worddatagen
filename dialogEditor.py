@@ -109,6 +109,9 @@ class Ui_Dialog(object):
         self.btnSetAllTextColor = QtWidgets.QPushButton(Dialog)
         self.btnSetAllTextColor.setGeometry(QtCore.QRect(720, 540, 75, 23))
         self.btnSetAllTextColor.setObjectName("btnSetAllTextColor")
+        self.btnAdventureNotes = QtWidgets.QPushButton(Dialog)
+        self.btnAdventureNotes.setGeometry(QtCore.QRect(810, 540, 101, 23))
+        self.btnAdventureNotes.setObjectName("btnAdventureNotes")
 
         self.retranslateUi(Dialog)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
@@ -141,3 +144,4 @@ class Ui_Dialog(object):
         item.setText(_translate("Dialog", "Message"))
         self.label_8.setText(_translate("Dialog", "Filter:"))
         self.btnSetAllTextColor.setText(_translate("Dialog", "Set All Color"))
+        self.btnAdventureNotes.setText(_translate("Dialog", "Adventure Notes"))

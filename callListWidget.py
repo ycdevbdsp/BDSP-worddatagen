@@ -9,6 +9,244 @@ from PyQt5.QtWidgets import QDialog, QApplication, QMessageBox, QTableWidgetItem
 from PyQt5.QtGui import QFont, QColor
 from PyQt5.QtCore import QModelIndex
 from dialogEditor import *
+from adventureNoteEditor import *
+
+class AdventureNotesEditorForm(QDialog):
+
+    AdvNotesPath = "input\AdventureNoteData.json"
+    AdvNotesLabelsPath = "input\english_dlp_adventure_note.json"
+    AdvNotesContents = {}
+    AdvNotesLabelsContents = {}
+    AdvNoteDataIndices = {}
+    AdvNotesLabelsIndices = {}
+    AdvNotesTitlePageCounts = {}
+    AdventureNoteDataOpenFile = {}
+    DLPAdventureNoteOpenFile = {}
+    NextLabelIndex = 0
+    NextArrayIndex = 0
+    SelectedPageIndex = -1
+    outputs = "output"
+
+    def __init__(self):
+        super().__init__()
+        self.ui = Ui_AdventureNotesEditor()
+        self.ui.setupUi(self)
+        self.ui.listAdventureNotePages.itemSelectionChanged.connect (self.adventureNotesPageChanged)
+        self.ui.textEditPageTitle.setFont(QFont('FOT-UDKakugoC80 Pro DB', 16))
+        self.ui.textEditTextLabel.setFont(QFont('FOT-UDKakugoC80 Pro DB', 16))
+        self.ui.textEditTextLabelPatch.setFont(QFont('FOT-UDKakugoC80 Pro DB', 16))
+        self.ui.btnAddPage.clicked.connect(self.btnAddPageClicked)
+        self.ui.btnReplacePage.clicked.connect(self.btnReplacePageClicked)
+        self.ui.btnSavePage.clicked.connect(self.btnSavePageClicked)
+
+        pages = self.ui.listAdventureNotePages
+        
+        with open(self.AdvNotesPath, 'r', encoding='utf-8') as file:
+            advNotesPathFile = file.read()
+            self.AdventureNoteDataOpenFile = json.loads(advNotesPathFile)
+
+        with open(self.AdvNotesLabelsPath, 'r', encoding='utf-8') as file:
+            advNotesLabelsPathFile = file.read ()
+            self.DLPAdventureNoteOpenFile = json.loads(advNotesLabelsPathFile)
+
+        trueIndex = 0
+        for label in  self.DLPAdventureNoteOpenFile['labelDataArray']:
+            self.AdvNotesLabelsContents[label['labelName']] = label['wordDataArray']
+            self.AdvNotesLabelsIndices[label['labelName']] = trueIndex
+            trueIndex += 1
+
+            if label['labelIndex'] > self.NextLabelIndex:
+                self.NextLabelIndex = label['labelIndex'] + 1
+
+            if label['arrayIndex'] > self.NextArrayIndex:
+                self.NextArrayIndex = label['arrayIndex'] + 1
+            
+        trueIndex = 0
+        for note in self.AdventureNoteDataOpenFile['Data']:
+            if (note['TitleLabel'] in self.AdvNotesTitlePageCounts):
+                self.AdvNotesTitlePageCounts[note['TitleLabel']] += 1
+            else:
+                self.AdvNotesTitlePageCounts[note['TitleLabel']] = 1
+            self.AdvNoteDataIndices[note['Index']] = trueIndex
+            trueIndex += 1
+
+            pages.addItem(f"{self.AdvNotesLabelsContents[note['TitleLabel']][0]['str']} {self.AdvNotesTitlePageCounts[note['TitleLabel']]}")
+            self.AdvNotesContents[note['Index']] = note
+
+
+        self.NextPageIndex = pages.count() + 1
+        
+
+    def adventureNotesPageChanged(self):
+
+        if len(self.ui.listAdventureNotePages.selectedItems()) == 0:
+            return
+        
+        self.SelectedPageIndex = self.ui.listAdventureNotePages.currentIndex().row()
+        print(f"Length of list = {self.ui.listAdventureNotePages.count()}")
+        print(f"SelectedPageIndex = {self.SelectedPageIndex}")
+        selectedPage = self.SelectedPageIndex + 1 #add 1 because the indexes in the file are 1-indexed.
+        pageData = self.AdvNotesContents[selectedPage]
+        print(pageData)
+        pageTitle = pageData['TitleLabel']
+        pageText = pageData['TextLabel']
+        pagePatchText = pageData['TextLabelPatch']
+        pageNoteShowFlag = pageData['NoteShowFlag']
+        pageImage = pageData['Image']
+        pageOpenFlag = pageData['OpenFlag']
+
+        self.ui.titleLabelLineEdit.setText(pageTitle)
+        self.ui.textLabelLineEdit.setText(pageText)
+        self.ui.textLabelPatchLineEdit.setText(pagePatchText)
+        self.ui.noteShowFlagLineEdit.setText(str(pageNoteShowFlag))
+        self.ui.imageLineEdit.setText(pageImage)
+        self.ui.openFlagLineEdit.setText(str(pageOpenFlag))
+
+        # Populate the title and text fields with the actual contents.
+
+        # The titles just have one wordDataArray entry, so they can always just be indexed at 0.
+
+        title = self.AdvNotesLabelsContents[pageTitle][0]['str']
+        self.ui.textEditPageTitle.setText (title)
+
+        # Page contents can be variable length, so we need to concat it all together.
+
+        #TextLabel first
+        msg = ""
+        for words in self.AdvNotesLabelsContents[pageText]:
+            if words['patternID'] == 5:
+                    msg += "<name>" + '\n'
+            else:
+                msg += words['str'] + '\n'
+
+        self.ui.textEditTextLabel.setText(msg)
+
+        #TextLabelPatch next
+        msg = ""
+        for words in self.AdvNotesLabelsContents[pagePatchText]:
+            if words['patternID'] == 5:
+                    msg += "<name>" + '\n'
+            else:
+                msg += words['str'] + '\n'
+
+        self.ui.textEditTextLabelPatch.setText(msg)
+
+        return
+    
+    def btnAddPageClicked(self):
+        
+        if self.ui.titleLabelLineEdit.text() not in self.AdvNotesLabelsContents:
+            newTitle = worddata.convert2BDSPNoteTitle(self.ui.textEditPageTitle.toPlainText(), self.NextLabelIndex, self.NextArrayIndex, False, self.ui.titleLabelLineEdit.text())
+            self.NextLabelIndex += 1
+            self.NextArrayIndex += 1
+            self.DLPAdventureNoteOpenFile['labelDataArray'].append(newTitle)
+            self.AdvNotesLabelsContents[self.ui.titleLabelLineEdit.text()] = newTitle['wordDataArray']
+            self.AdvNotesTitlePageCounts[self.ui.titleLabelLineEdit.text()] = 1
+            self.AdvNotesLabelsIndices[self.ui.titleLabelLineEdit.text()] = len(self.AdvNotesLabelsIndices) #this will be the len before we've added the new entry, which is ultimately what we want
+        else:
+            self.AdvNotesTitlePageCounts[self.ui.titleLabelLineEdit.text()] += 1
+        
+        if self.ui.textLabelLineEdit.text() not in self.AdvNotesLabelsContents:
+            print(self.ui.textEditTextLabel.toPlainText())
+            newText = worddata.convert2BDSPNoteText(self.ui.textEditTextLabel.toPlainText(), self.NextLabelIndex, self.NextArrayIndex, False, self.ui.textLabelLineEdit.text())
+            self.NextLabelIndex += 1
+            self.NextArrayIndex += 1
+            self.DLPAdventureNoteOpenFile['labelDataArray'].append(newText)
+            self.AdvNotesLabelsContents[self.ui.textLabelLineEdit.text()] = newText['wordDataArray']
+            self.AdvNotesLabelsIndices[self.ui.textLabelLineEdit.text()] = len(self.AdvNotesLabelsIndices) #this will be the len before we've added the new entry, which is ultimately what we want
+
+        if self.ui.textLabelPatchLineEdit.text() not in self.AdvNotesLabelsContents:
+            newTextPatch = worddata.convert2BDSPNoteText(self.ui.textEditTextLabelPatch.toPlainText(), self.NextLabelIndex, self.NextArrayIndex, False, self.ui.textLabelPatchLineEdit.text())
+            self.NextLabelIndex += 1
+            self.NextArrayIndex += 1
+            self.DLPAdventureNoteOpenFile['labelDataArray'].append(newTextPatch)
+            self.AdvNotesLabelsContents[self.ui.textLabelPatchLineEdit.text()] = newTextPatch['wordDataArray']
+            self.AdvNotesLabelsIndices[self.ui.textLabelPatchLineEdit.text()] = len(self.AdvNotesLabelsIndices) #this will be the len before we've added the new entry, which is ultimately what we want
+
+        data = {
+            "Index": len(self.AdvNoteDataIndices) + 1,
+            "Version": 0,
+            "Category": 1,
+            "TitleLabel": self.ui.titleLabelLineEdit.text(),
+            "TextLabel": self.ui.textLabelLineEdit.text(),
+            "TextLabelPatch": self.ui.textLabelPatchLineEdit.text(),
+            "NoteShowFlag": int(self.ui.noteShowFlagLineEdit.text()),
+            "Image": self.ui.imageLineEdit.text(),
+            "OpenFlag": int(self.ui.openFlagLineEdit.text())
+        }
+
+        self.AdvNoteDataIndices[data['Index']] = data['Index'] - 1
+        self.AdventureNoteDataOpenFile['Data'].append(data)
+        self.AdvNotesContents[data['Index']] = data
+        self.ui.listAdventureNotePages.addItem(f"{self.ui.textEditPageTitle.toPlainText()} {self.AdvNotesTitlePageCounts[data['TitleLabel']]}")
+        return
+    
+    def btnReplacePageClicked(self):
+
+        if self.SelectedPageIndex == -1:
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Critical)
+            msg.setText("Select a page to replace.")
+            msg.exec_()
+            return
+
+        try:
+            #Update the entries in dlp_adventure_note.json
+            titleLabel = self.ui.titleLabelLineEdit.text ()
+            newTitle = worddata.convert2BDSP(self.ui.textEditPageTitle.toPlainText(), 0, 0, False, "")
+            self.DLPAdventureNoteOpenFile['labelDataArray'][self.AdvNotesLabelsIndices[titleLabel]]['wordDataArray'] = newTitle['wordDataArray']
+            
+            textLabel = self.ui.textLabelLineEdit.text()
+            newText = worddata.convert2BDSP(self.ui.textEditTextLabel.toPlainText(), 0, 0, False, "")
+            self.DLPAdventureNoteOpenFile['labelDataArray'][self.AdvNotesLabelsIndices[textLabel]]['wordDataArray'] = newText['wordDataArray']
+
+            textPatchLabel = self.ui.textLabelPatchLineEdit.text()
+            newTextPatch = worddata.convert2BDSP(self.ui.textEditTextLabelPatch.toPlainText(), 0, 0, False, "")
+            self.DLPAdventureNoteOpenFile['labelDataArray'][self.AdvNotesLabelsIndices[textPatchLabel]]['wordDataArray'] = newTextPatch['wordDataArray']
+
+            #Update the entries in AdventureNoteData.json
+            
+            self.AdventureNoteDataOpenFile['Data'][self.SelectedPageIndex]['TitleLabel'] = self.ui.titleLabelLineEdit.text()
+            self.AdventureNoteDataOpenFile['Data'][self.SelectedPageIndex]['TextLabel'] = self.ui.textLabelLineEdit.text()
+            self.AdventureNoteDataOpenFile['Data'][self.SelectedPageIndex]['TextLabelPatch'] = self.ui.textLabelPatchLineEdit.text()
+            self.AdventureNoteDataOpenFile['Data'][self.SelectedPageIndex]['NoteShowFlag'] = int(self.ui.noteShowFlagLineEdit.text())
+            self.AdventureNoteDataOpenFile['Data'][self.SelectedPageIndex]['Image'] = self.ui.imageLineEdit.text()
+            self.AdventureNoteDataOpenFile['Data'][self.SelectedPageIndex]['OpenFlag'] = int(self.ui.openFlagLineEdit.text())
+
+            self.AdvNotesContents[self.SelectedPageIndex+1] = self.AdventureNoteDataOpenFile['Data'][self.SelectedPageIndex]
+
+            self.AdvNotesLabelsContents[titleLabel] = newTitle['wordDataArray']
+            self.AdvNotesLabelsContents[textLabel] = newText['wordDataArray']
+            self.AdvNotesLabelsContents[textPatchLabel] = newTextPatch['wordDataArray']
+        except Exception as e:
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Critical)
+            msg.setText(str(e))
+            msg.exec_()
+        return
+    
+    def btnSavePageClicked(self):
+        try:
+            dlpFile = "english_dlp_adventure_note.json"
+            advNoteDataFile = "AdventureNoteData.json"
+
+            if os.path.exists(self.outputs) == False:
+                os.makedirs(self.outputs)
+
+            with open(self.outputs+"\\new_" + dlpFile, 'w+', encoding="utf-8") as outfile:
+                json.dump(self.DLPAdventureNoteOpenFile, outfile)
+
+            with open(self.outputs+"\\new_" + advNoteDataFile, 'w+', encoding="utf-8") as outfile:
+                json.dump(self.AdventureNoteDataOpenFile, outfile)
+
+        except Exception as e:
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Critical)
+            msg.setText("An error occurred trying to save your changes:\n" + str(e) + "\nMake sure the 'output' folder exists in the same " +
+               "directory as this executable, and then try again.")
+            msg.exec_()
+        return
+    
 class MyForm(QDialog):    
     OpenFile = {}
     MessageList = {}
@@ -63,6 +301,9 @@ class MyForm(QDialog):
         self.ui.speakerCombo.currentTextChanged.connect(self.filterMsgsBySpeaker)
         self.ui.msgTableFilter.textChanged.connect(self.filterMsgTable)
         self.ui.msgTable.cellClicked.connect(self.selectMsgFromMessageList)
+        self.ui.btnAdventureNotes.clicked.connect(self.openAdventureNotesEditor)
+
+        self.adventureNotesEditor = AdventureNotesEditorForm()
 
         # if self.ui.textEditNewMsg.font().family() == 'FOT-UDKakugoC80 Pro DB':
         #     self.ui.textEditNewMsg.setFontPointSize(17)
@@ -73,7 +314,7 @@ class MyForm(QDialog):
         fileList = os.listdir(self.path)
         
         for f in fileList:
-            if f != "MsgWindowData.json" and f != "english_dlp_speakers_name.json":
+            if f != "MsgWindowData.json" and f != "english_dlp_speakers_name.json" and f != "AdventureNoteData.json" and f != "english_dlp_adventure_note.json":
                 files.addItem(f)
         
         if os.path.exists(self.nameplatesPath):
@@ -107,6 +348,10 @@ class MyForm(QDialog):
         files.setCurrentItem(files.item(0))
         self.show()
     
+    def openAdventureNotesEditor(self):
+        self.adventureNotesEditor.show()
+
+
     def filterMsgTable(self):
         filterText = self.ui.msgTableFilter.text().lower()
 

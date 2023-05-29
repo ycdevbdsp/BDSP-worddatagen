@@ -88,3 +88,55 @@ def addHeader(message, labelIndex, arrayIndex, label):
     header["wordDataArray"] = message["wordDataArray"]
     
     return header
+
+def addAdventureNoteHeader(message, labelIndex, arrayIndex, label, title):
+    
+    if (title):
+      header = {
+        "labelIndex": labelIndex,
+        "arrayIndex": arrayIndex,
+        "labelName": "CHANGE_BEFORE_IMPORT",
+        "styleInfo": {
+            "styleIndex": 12,
+            "colorIndex": -1,
+            "fontSize": 54,
+            "maxWidth": 756,
+            "controlID": 0
+        },
+        "attributeValueArray": [
+          -1,
+          0,
+          0,
+          -1,
+          0
+        ],
+        "tagDataArray": [],
+        "wordDataArray": []
+      }
+    else:
+       header = {
+        "labelIndex": labelIndex,
+        "arrayIndex": arrayIndex,
+        "labelName": "CHANGE_BEFORE_IMPORT",
+        "styleInfo": {
+            "styleIndex": 66,
+            "colorIndex": -1,
+            "fontSize": 42,
+            "maxWidth": 924,
+            "controlID": 0
+        },
+        "attributeValueArray": [
+          -1,
+          0,
+          0,
+          -1,
+          0
+        ],
+        "tagDataArray": [],
+        "wordDataArray": []
+      }
+    
+    header["labelName"] = label
+    header["wordDataArray"] = message["wordDataArray"]
+    
+    return header

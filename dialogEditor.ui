@@ -342,6 +342,19 @@ p, li { white-space: pre-wrap; }
     <string>Set All Color</string>
    </property>
   </widget>
+  <widget class="QPushButton" name="btnAdventureNotes">
+   <property name="geometry">
+    <rect>
+     <x>810</x>
+     <y>540</y>
+     <width>101</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Adventure Notes</string>
+   </property>
+  </widget>
  </widget>
  <resources/>
  <connections/>
