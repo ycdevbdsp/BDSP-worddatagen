@@ -21,6 +21,7 @@ class AdventureNotesEditorForm(QDialog):
     AdvNotesLabelsIndices = {}
     AdvNotesTitlePageCounts = {}
     AdventureNoteDataOpenFile = {}
+    DisableJournal = False
     DLPAdventureNoteOpenFile = {}
     NextLabelIndex = 0
     NextArrayIndex = 0
@@ -41,38 +42,46 @@ class AdventureNotesEditorForm(QDialog):
 
         pages = self.ui.listAdventureNotePages
         
-        with open(self.AdvNotesPath, 'r', encoding='utf-8') as file:
-            advNotesPathFile = file.read()
-            self.AdventureNoteDataOpenFile = json.loads(advNotesPathFile)
+        if os.path.exists(self.AdvNotesPath):
+            with open(self.AdvNotesPath, 'r', encoding='utf-8') as file:
+                advNotesPathFile = file.read()
+                self.AdventureNoteDataOpenFile = json.loads(advNotesPathFile)
+        else:
+            self.DisableJournal = True
+            return
 
-        with open(self.AdvNotesLabelsPath, 'r', encoding='utf-8') as file:
-            advNotesLabelsPathFile = file.read ()
-            self.DLPAdventureNoteOpenFile = json.loads(advNotesLabelsPathFile)
+        if os.path.exists(self.AdvNotesLabelsPath):
+            with open(self.AdvNotesLabelsPath, 'r', encoding='utf-8') as file:
+                advNotesLabelsPathFile = file.read ()
+                self.DLPAdventureNoteOpenFile = json.loads(advNotesLabelsPathFile)
 
         trueIndex = 0
-        for label in  self.DLPAdventureNoteOpenFile['labelDataArray']:
-            self.AdvNotesLabelsContents[label['labelName']] = label['wordDataArray']
-            self.AdvNotesLabelsIndices[label['labelName']] = trueIndex
-            trueIndex += 1
 
-            if label['labelIndex'] > self.NextLabelIndex:
-                self.NextLabelIndex = label['labelIndex'] + 1
+        if 'labelDataArray' in self.DLPAdventureNoteOpenFile:
+            for label in  self.DLPAdventureNoteOpenFile['labelDataArray']:
+                self.AdvNotesLabelsContents[label['labelName']] = label['wordDataArray']
+                self.AdvNotesLabelsIndices[label['labelName']] = trueIndex
+                trueIndex += 1
 
-            if label['arrayIndex'] > self.NextArrayIndex:
-                self.NextArrayIndex = label['arrayIndex'] + 1
+                if label['labelIndex'] > self.NextLabelIndex:
+                    self.NextLabelIndex = label['labelIndex'] + 1
+
+                if label['arrayIndex'] > self.NextArrayIndex:
+                    self.NextArrayIndex = label['arrayIndex'] + 1
             
         trueIndex = 0
-        for note in self.AdventureNoteDataOpenFile['Data']:
-            if (note['TitleLabel'] in self.AdvNotesTitlePageCounts):
-                self.AdvNotesTitlePageCounts[note['TitleLabel']] += 1
-            else:
-                self.AdvNotesTitlePageCounts[note['TitleLabel']] = 1
-            self.AdvNoteDataIndices[note['Index']] = trueIndex
-            trueIndex += 1
 
-            pages.addItem(f"{self.AdvNotesLabelsContents[note['TitleLabel']][0]['str']} {self.AdvNotesTitlePageCounts[note['TitleLabel']]}")
-            self.AdvNotesContents[note['Index']] = note
+        if 'Data' in self.AdventureNoteDataOpenFile:
+            for note in self.AdventureNoteDataOpenFile['Data']:
+                if (note['TitleLabel'] in self.AdvNotesTitlePageCounts):
+                    self.AdvNotesTitlePageCounts[note['TitleLabel']] += 1
+                else:
+                    self.AdvNotesTitlePageCounts[note['TitleLabel']] = 1
+                self.AdvNoteDataIndices[note['Index']] = trueIndex
+                trueIndex += 1
 
+                pages.addItem(f"{self.AdvNotesLabelsContents[note['TitleLabel']][0]['str']} {self.AdvNotesTitlePageCounts[note['TitleLabel']]}")
+                self.AdvNotesContents[note['Index']] = note
 
         self.NextPageIndex = pages.count() + 1
         
@@ -304,6 +313,9 @@ class MyForm(QDialog):
         self.ui.btnAdventureNotes.clicked.connect(self.openAdventureNotesEditor)
 
         self.adventureNotesEditor = AdventureNotesEditorForm()
+
+        if self.adventureNotesEditor.DisableJournal is True:
+            self.ui.btnAdventureNotes.setVisible(False)
 
         # if self.ui.textEditNewMsg.font().family() == 'FOT-UDKakugoC80 Pro DB':
         #     self.ui.textEditNewMsg.setFontPointSize(17)
